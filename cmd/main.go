@@ -1,11 +1,12 @@
 package main
 
-import easymirrorbackend "github.com/easymirror/easymirror-backend"
+import easymirrorbackend "github.com/easymirror/easymirror-backend/internal/api"
 
 func main() {
 
 	// TODO initialize environment file
 	// TODO initialize database(s)
-	// TODO initialize API server
-	easymirrorbackend.Start()
+
+	// initialize API server
+	easymirrorbackend.InitServer()
 }
