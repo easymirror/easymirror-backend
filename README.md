@@ -35,6 +35,7 @@ Source code to EasyMirror's backend
 
 ## TODOs
 - [ ] Add a `Project structure` section to the README
+- [ ] Logs go into a MongoDB database
 - [ ] Integrate postgresSQL
 - [ ] Endpoint to allow uploads
 - [ ] Account endpoint
