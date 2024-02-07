@@ -29,10 +29,12 @@ Source code to EasyMirror's backend
 | - | - | - |
 | `\*Feature name*` | Will be used as a development branch | `add_user_endpoint` branch
 | `staging` | Nearly exact replica of a production environment for testing. | `staging`
-| `v*.*.*` | Production branch. Will be used by clients. | `v1.0.2`
+| `v*.*.*` | Quality Assurance branch. | `v1.0.2`
+| `main` | Production branch. Will be used by clients. | `main`
 
 
 ## TODOs
+- [ ] Integrate postgresSQL
 - [ ] Endpoint to allow uploads
 - [ ] Account endpoint
     - [ ] Endpoint that returns account info
