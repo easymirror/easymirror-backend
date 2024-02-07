@@ -16,6 +16,22 @@ Source code to EasyMirror's backend
 ### Dockerhub
 - As we will not be paying for an organization Dockerhub, all containers will be stored in a personal docker hub.
 
+
+## CI/CD
+### Process
+- In order to have a proper CI/CD workflow, updates will be done in stages.
+1. Create new branch with goal feature
+    - Do all necessary commits to make the feature work
+2. Make a pull request to merge into the `staging` branch
+3. If all tests pass and nothing breaks, make a pull request into the `v*.*.*` branch.
+### Branches
+| Name | Description | Example
+| - | - | - |
+| `\*Feature name*` | Will be used as a development branch | `add_user_endpoint` branch
+| `staging` | Nearly exact replica of a production environment for testing. | `staging`
+| `v*.*.*` | Production branch. Will be used by clients. | `v1.0.2`
+
+
 ## TODOs
 - [ ] Endpoint to allow uploads
 - [ ] Account endpoint
