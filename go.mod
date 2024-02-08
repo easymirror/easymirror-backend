@@ -2,7 +2,10 @@ module github.com/easymirror/easymirror-backend
 
 go 1.21.6
 
-require github.com/labstack/echo/v4 v4.11.4
+require (
+	github.com/labstack/echo/v4 v4.11.4
+	github.com/rs/zerolog v1.32.0
+)
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
