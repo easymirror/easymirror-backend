@@ -5,11 +5,14 @@ import (
 
 	easymirrorbackend "github.com/easymirror/easymirror-backend/internal/api"
 	"github.com/easymirror/easymirror-backend/internal/db"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-
-	// TODO initialize environment file
+	// Load the env file
+	if err := godotenv.Load(".env"); err != nil {
+		log.Println("no env file loaded.")
+	}
 
 	// Initialize database(s)
 	database, err := db.InitDB()
