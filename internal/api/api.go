@@ -25,6 +25,8 @@ func InitServer() {
 		port = "80" // Default port if not specified
 	}
 	address := ":" + port
+
+	// Start the server
 	e.Logger.Fatal(e.Start(address))
 }
 
