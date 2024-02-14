@@ -46,3 +46,6 @@ Source code to EasyMirror's backend
     - [ ] Endpoint to allow renaming of history item
     - [ ] Endpoint that gives list of files in history link
     - [ ] Endpoint to delete history item
+- Authentication
+    - [ ] When a new user joins, set a JWT
+    - [ ] JWT refresh every 12 hours
