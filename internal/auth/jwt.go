@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -37,4 +38,23 @@ func GenerateJWT(userID string) (string, error) {
 		return "", err
 	}
 	return tokenStr, err
+}
+
+// ValidateJWT validates the signature of a given JWT token
+func ValidateJWT(receivedToken string) (*jwt.Token, error) {
+	// Parse takes the token string and a function for looking up the key. The latter is especially
+	// useful if you use multiple keys for your application.
+	token, err := jwt.Parse(receivedToken, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			// Validate the Token and return an error if the signing token is not the proper one
+			return nil, fmt.Errorf("unexpected signing method: %v in token of type: %v", t.Header["alg"], t.Header["typ"])
+		}
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+	if err != nil {
+		log.Println("Error validating JWT:", err)
+		return nil, fmt.Errorf("ValidateJWT error: %w", err)
+	}
+	return token, nil
+
 }

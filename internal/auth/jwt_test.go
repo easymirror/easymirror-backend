@@ -23,3 +23,21 @@ func TestGenerateJWT(t *testing.T) {
 	}
 	assert.NotEmpty(t, token)
 }
+
+// go test -v -timeout 30s -run ^TestValidateJWT$ github.com/easymirror/easymirror-backend/internal/auth
+func TestValidateJWT(t *testing.T) {
+	// Generate a JWT Token
+	token, err := GenerateJWT("some_id")
+	if err != nil {
+		t.Fatalf("Error generating JWT: %v", err)
+	}
+
+	// Validate the JWT Token
+	tkn, err := ValidateJWT(token)
+	if err != nil {
+		t.Fatalf("Error validating JWT: %v", err)
+	}
+
+	tkn.Claims.Valid()
+	assert.Equal(t, true, tkn.Valid)
+}
