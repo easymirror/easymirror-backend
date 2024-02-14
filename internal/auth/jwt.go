@@ -29,7 +29,7 @@ func GenerateJWT(userID string) (string, error) {
 	// to include in our token payload content in key-value format
 	claims := token.Claims.(jwt.MapClaims)
 	claims["authorized"] = true
-	claims["user_id"] = userID
+	claims["sub"] = userID
 	claims["exp"] = time.Now().Add(accessTokenMaxAge).Unix()
 
 	// Sign the token with the signingkey defined in the step before
