@@ -16,33 +16,25 @@ const (
 	issuer             = "easymirror.io"
 )
 
-// Generate JWT Token based in the email and in the role as input.
-// Creates a token by the algorithm signing method (HS256) and the user's ID, role, and exp into claims.
-// Claims are pieces of info added into the tokens.
+// GenerateJWT is a wrapper function that generates valid access and refresh token based on the userID provided.
 func GenerateJWT(userID string) (*AuthToken, error) {
-	// Add the signingkey and convert it to an array of bytes
-	accessSecret := []byte(os.Getenv("JWT_ACCESS_SECRET"))
-	refreshSecret := []byte(os.Getenv("JWT_REFRESH_SECRET"))
-
 	// Generate access token
-	// The JWT library defines a struct with the MapClaims for define the different claims
-	// to include in our token payload content in key-value format
+	accessSecret := []byte(os.Getenv("JWT_ACCESS_SECRET"))
 	accessTokenClaims := &jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(accessTokenMaxAge).Unix(),
 		Subject:   userID,
 		IssuedAt:  time.Now().Unix(),
 		Issuer:    issuer,
 	}
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
-	accessTokenStr, err := accessToken.SignedString(accessSecret)
+	accessTokenStr, err := generateJWT(accessSecret, accessTokenClaims)
 	if err != nil {
 		return nil, fmt.Errorf("SignedString error: %w", err)
 	}
 
 	// Generate refresh token
+	refreshSecret := []byte(os.Getenv("JWT_REFRESH_SECRET"))
 	refreshTokenClaims := &jwt.StandardClaims{IssuedAt: time.Now().Unix(), Issuer: issuer}
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
-	refreshTokenStr, err := refreshToken.SignedString(refreshSecret)
+	refreshTokenStr, err := generateJWT(refreshSecret, refreshTokenClaims)
 	if err != nil {
 		return nil, fmt.Errorf("SignedString error: %w", err)
 	}
@@ -52,6 +44,16 @@ func GenerateJWT(userID string) (*AuthToken, error) {
 		AccessToken:  accessTokenStr,
 		RefreshToken: refreshTokenStr,
 	}, nil
+}
+
+// Generate JWT Token based in the email and in the role as input.
+// Creates a token by the algorithm signing method (HS256) and the user's ID, role, and exp into claims.
+// Claims are pieces of info added into the tokens.
+func generateJWT(secret []byte, claims *jwt.StandardClaims) (string, error) {
+	// The JWT library defines a struct with the MapClaims for define the different claims
+	// to include in our token payload content in key-value format
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(secret)
 }
 
 // ValidateJWT validates the signature of a given JWT token
