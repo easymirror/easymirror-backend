@@ -49,3 +49,4 @@ Source code to EasyMirror's backend
 - Authentication
     - [ ] When a new user joins, set a JWT
     - [ ] JWT refresh every 12 hours
+    - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
