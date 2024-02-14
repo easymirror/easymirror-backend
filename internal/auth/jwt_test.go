@@ -41,3 +41,19 @@ func TestValidateJWT(t *testing.T) {
 	tkn.Claims.Valid()
 	assert.Equal(t, true, tkn.Valid)
 }
+
+// go test -v -timeout 30s -run ^TestRefreshAccessToken$ github.com/easymirror/easymirror-backend/internal/auth
+func TestRefreshAccessToken(t *testing.T) {
+	// Generate a JWT
+	auth, err := GenerateJWT("some_id")
+	if err != nil {
+		t.Fatalf("Error generating JWT: %v", err)
+	}
+
+	// Refresh the token
+	newAuth, err := RefreshAccessToken(auth.RefreshToken)
+	if err != nil {
+		t.Fatalf("Error refreshing JWT: %v", err)
+	}
+	assert.NotEmpty(t, newAuth)
+}

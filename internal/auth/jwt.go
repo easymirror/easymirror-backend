@@ -73,3 +73,34 @@ func ValidateJWT(receivedToken string) (*jwt.Token, error) {
 	}
 	return token, nil
 }
+
+// RefreshAccessToken refreshes the access token using the refresh token
+func RefreshAccessToken(refreshTokenStr string) (string, error) {
+	refreshToken, err := jwt.ParseWithClaims(refreshTokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_REFRESH_SECRET")), nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := refreshToken.Claims.(*jwt.StandardClaims)
+	if !ok || !refreshToken.Valid {
+		return "", fmt.Errorf("invalid refresh token")
+	}
+
+	// Generate new access token
+	accessSecret := []byte(os.Getenv("JWT_ACCESS_SECRET"))
+	accessTokenClaims := &jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(accessTokenMaxAge).Unix(),
+		Subject:   claims.Subject,
+		IssuedAt:  time.Now().Unix(),
+		Issuer:    issuer,
+	}
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
+	newAccessToken, err := accessToken.SignedString(accessSecret)
+	if err != nil {
+		return "", err
+	}
+
+	return newAccessToken, nil
+}
