@@ -33,7 +33,7 @@ func TestValidateJWT(t *testing.T) {
 	}
 
 	// Validate the JWT Token
-	tkn, err := ValidateJWT(token)
+	tkn, err := ValidateJWT(token.AccessToken)
 	if err != nil {
 		t.Fatalf("Error validating JWT: %v", err)
 	}
