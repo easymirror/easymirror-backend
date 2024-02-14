@@ -3,6 +3,7 @@ package api
 import (
 	"os"
 
+	"github.com/easymirror/easymirror-backend/internal/api/v1/router"
 	"github.com/easymirror/easymirror-backend/internal/log"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -17,7 +18,7 @@ func InitServer() {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{AllowOrigins: []string{"*"}}))
 
 	// Register routes for the server
-	registerRoutes(e)
+	router.Register(e)
 
 	// Get the port/address to start the server
 	port := os.Getenv("PORT")
@@ -28,15 +29,4 @@ func InitServer() {
 
 	// Start the server
 	e.Logger.Fatal(e.Start(address))
-}
-
-// registerRoutes registers all routes for all versions of the API
-func registerRoutes(e *echo.Echo) {
-	// Serve the data collector
-
-	// Start the API groups
-	// api := e.Group("/api")
-	// v1 := api.Group("/v1")
-	{
-	}
 }
