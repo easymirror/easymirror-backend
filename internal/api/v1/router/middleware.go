@@ -16,17 +16,17 @@ func jwtConfig() echojwt.Config {
 		SigningMethod:          echojwt.AlgorithmHS256,
 		TokenLookup:            "header:Authorization:Bearer ,cookie:user_session",
 		ContextKey:             "jwt-token",
-		ContinueOnIgnoredError: true, // Set this to `true` so it can go to the correct handle
+		ContinueOnIgnoredError: true, // Set this to `true` so it can go to the correct handler
 		ErrorHandler: func(c echo.Context, err error) error {
 			log.Println("There was an error with the JWT:", err)
-			switch {
-			case errors.Is(err, echojwt.ErrJWTMissing):
-				// TODO Create a new JWT Pair (access & refresh token)
-				log.Println("JWT is missing.")
-			case errors.Is(err, echojwt.ErrJWTInvalid):
-				// TODO check cookies to see if a refresh token is present
+			if errors.Is(err, echojwt.ErrJWTInvalid) {
+				// TODO check cookies to see if a refresh token is present. If present, refresh acess token & return
 				log.Println("JWT is invalid.")
+				return nil
 			}
+
+			// TODO Create and set new JWT Pair (access & refresh token)
+			log.Println("JWT is missing.")
 
 			// Return nil so it can continue to the appropriate handler
 			return nil
