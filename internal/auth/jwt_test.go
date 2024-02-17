@@ -1,9 +1,13 @@
 package auth
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,10 +21,17 @@ func init() {
 
 // go test -v -timeout 30s -run ^TestGenerateJWT$ github.com/easymirror/easymirror-backend/internal/auth
 func TestGenerateJWT(t *testing.T) {
-	token, err := GenerateJWT("some_id")
+	accessSecret := []byte(os.Getenv("JWT_ACCESS_SECRET"))
+	claims := &jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(10 * time.Minute).Unix(),
+		IssuedAt:  time.Now().Unix(),
+		Issuer:    issuer,
+	}
+	token, err := generateJWT(accessSecret, claims)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(token)
 	assert.NotEmpty(t, token)
 }
 
