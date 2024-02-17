@@ -10,8 +10,7 @@ import (
 func Register(e *echo.Echo) {
 	// Start the API groups
 	api := e.Group("/api")
-	v1 := api.Group("/v1")
-	v1.Use(echojwt.WithConfig(jwtConfig()))
+	v1 := api.Group("/v1", echojwt.WithConfig(jwtConfig()))
 	{
 
 		// TODO endpoint to get new session
