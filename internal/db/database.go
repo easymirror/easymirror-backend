@@ -6,7 +6,7 @@ import (
 )
 
 type Database struct {
-	postgresConn *sql.DB
+	PostgresConn *sql.DB
 }
 
 // InitDB initializes all of the databases
@@ -18,13 +18,13 @@ func InitDB() (*Database, error) {
 	}
 	// TODO Initialize MongoDB
 
-	return &Database{postgresConn: pqsql}, nil
+	return &Database{PostgresConn: pqsql}, nil
 }
 
 // CloseConnections closes all underlying connections to the database
 func (db *Database) CloseConnections() {
 	// Close PostgreSQL connection
-	db.postgresConn.Close()
+	db.PostgresConn.Close()
 
 	// TODO Close MongoDB connection
 }
