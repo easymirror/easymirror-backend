@@ -29,5 +29,5 @@ func main() {
 	}()
 
 	// initialize API server
-	easymirrorbackend.InitServer()
+	easymirrorbackend.InitServer(database)
 }
