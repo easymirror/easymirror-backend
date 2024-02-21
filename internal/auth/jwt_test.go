@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,9 +22,9 @@ func init() {
 // go test -v -timeout 30s -run ^TestGenerateJWT$ github.com/easymirror/easymirror-backend/internal/auth
 func TestGenerateJWT(t *testing.T) {
 	accessSecret := []byte(os.Getenv("JWT_ACCESS_SECRET"))
-	claims := &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(10 * time.Minute).Unix(),
-		IssuedAt:  time.Now().Unix(),
+	claims := &jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(10 * time.Minute)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		Issuer:    issuer,
 	}
 	token, err := generateJWT(accessSecret, claims)
@@ -49,7 +49,6 @@ func TestValidateJWT(t *testing.T) {
 		t.Fatalf("Error validating JWT: %v", err)
 	}
 
-	tkn.Claims.Valid()
 	assert.Equal(t, true, tkn.Valid)
 }
 
