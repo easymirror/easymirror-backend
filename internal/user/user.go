@@ -1,9 +1,11 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/easymirror/easymirror-backend/internal/db"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -52,4 +54,24 @@ func New() User {
 
 func newUser() User {
 	return user{id: uuid.New()}
+}
+
+// FromJWT converts JWT token to a User
+func FromJWT(t *jwt.Token) (User, error) {
+	if !t.Valid {
+		return nil, errors.New("jwt token not valid")
+	}
+
+	// Get the user-id from the JWT
+	userID, err := t.Claims.GetSubject()
+	if err != nil {
+		return nil, fmt.Errorf("GetSubject error: %w", err)
+	}
+
+	// Convert to type User
+	uId, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("parse uuid error: %w", err)
+	}
+	return &user{id: uId}, nil
 }
