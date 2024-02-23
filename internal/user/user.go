@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -10,7 +11,8 @@ import (
 )
 
 type User interface {
-	ID() uuid.UUID // returns the ID of the user
+	ID() uuid.UUID                                                                       // returns the ID of the user
+	MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]MirrorLink, error) // Returns a list of items a user has uploaded
 }
 
 type user struct {
