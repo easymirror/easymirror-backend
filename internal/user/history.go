@@ -46,7 +46,7 @@ func (u user) MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]
 	}
 
 	// Parse links
-	var links []MirrorLink
+	links := []MirrorLink{}
 	defer rows.Close()
 	for rows.Next() {
 
