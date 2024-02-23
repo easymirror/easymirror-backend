@@ -22,10 +22,14 @@ func init() {
 // go test -v -timeout 30s -run ^TestGenerateJWT$ github.com/easymirror/easymirror-backend/internal/auth
 func TestGenerateJWT(t *testing.T) {
 	accessSecret := []byte(os.Getenv("JWT_ACCESS_SECRET"))
-	claims := &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(10 * time.Minute)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		Issuer:    issuer,
+	claims := &AccessTokenData{
+		Scope: "test",
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenMaxAge)),
+			Subject:   "test_id",
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    issuer,
+		},
 	}
 	token, err := generateJWT(accessSecret, claims)
 	if err != nil {
