@@ -42,11 +42,11 @@ Source code to EasyMirror's backend
     - [ ] Endpoint that returns account info
     - [ ] Endpoint that allows updating account info
 - [ ] History
-    - [ ] Endpoint that returns upload history
+    - [x] Endpoint that returns upload history
     - [ ] Endpoint to allow renaming of history item
     - [ ] Endpoint that gives list of files in history link
     - [ ] Endpoint to delete history item
 - Authentication
-    - [ ] When a new user joins, set a JWT
-    - [ ] JWT refresh every 12 hours
+    - [x] When a new user joins, set a JWT
+    - [x] JWT refresh every 12 hours
     - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
