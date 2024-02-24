@@ -21,6 +21,7 @@ func Register(e *echo.Echo, db *db.Database) {
 		history := &history.Handler{Database: db}
 		v1.GET("/history", history.GetHistory)
 		v1.PATCH("/history/:id", history.UpdateHistoryItem)
+		v1.DELETE("/history/:id", history.DeleteHistoryItem)
 
 	}
 }

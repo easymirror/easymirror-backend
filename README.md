@@ -45,8 +45,10 @@ Source code to EasyMirror's backend
     - [x] Endpoint that returns upload history
     - [x] Endpoint to allow renaming of history item
     - [ ] Endpoint that gives list of files in history link
-    - [ ] Endpoint to delete history item
+    - [x] Endpoint to delete history item
 - Authentication
     - [x] When a new user joins, set a JWT
     - [x] JWT refresh every 12 hours
     - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
+- [ ] When deleting mirror links, cascade delete all relevant files too
+- [ ] When creating a new user, set the `member_since` column

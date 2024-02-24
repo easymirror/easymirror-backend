@@ -103,3 +103,33 @@ func (u user) UpdateMirrorLinkName(
 	}
 	return nil
 }
+
+func (u user) DeleteMirrorLink(ctx context.Context, db *db.Database, linkID string) error {
+	if db == nil {
+		return errors.New("database is nil")
+	}
+
+	// Begin TX
+	tx, err := db.PostgresConn.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("BeginTx error: %w", err)
+	}
+
+	// Delete Link
+	statement := `
+		DELETE FROM mirroring_links
+		WHERE id = ($1)
+		AND
+		created_by_id = ($2);
+	`
+	_, err = tx.Exec(statement, linkID, u.ID())
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error executing tx: %w", err)
+	}
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error comitting tx: %w", err)
+	}
+	return nil
+}

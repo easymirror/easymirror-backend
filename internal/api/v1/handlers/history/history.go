@@ -87,3 +87,34 @@ func (h *Handler) UpdateHistoryItem(c echo.Context) error {
 	resp["success"] = true
 	return c.JSON(http.StatusOK, resp)
 }
+
+func (h *Handler) DeleteHistoryItem(c echo.Context) error {
+	// Get the user-id from the JWT token
+	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
+	if !ok {
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	user, err := user.FromJWT(token)
+	if err != nil {
+		log.Println("Error getting user from JWT:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// Get the ID of the history item
+	id := c.Param("id")
+
+	// Delete the item
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	if err = user.DeleteMirrorLink(ctx, h.Database, id); err != nil {
+		// TODO return response based on error
+		log.Println("Failed to delete mirror link:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// Return response
+	resp := map[string]any{}
+	resp["success"] = true
+	return c.JSON(http.StatusOK, resp)
+}
