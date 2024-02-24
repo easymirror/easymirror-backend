@@ -7,15 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/easymirror/easymirror-backend/internal/db"
 	"github.com/easymirror/easymirror-backend/internal/user"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
-
-type Handler struct {
-	*db.Database
-}
 
 // GetHistory returns a list of items a user has uploaded
 func (h *Handler) GetHistory(c echo.Context) error {
