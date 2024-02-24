@@ -118,3 +118,33 @@ func (h *Handler) DeleteHistoryItem(c echo.Context) error {
 	resp["success"] = true
 	return c.JSON(http.StatusOK, resp)
 }
+
+func (h *Handler) GetFiles(c echo.Context) error {
+	// Get the user-id from the JWT token
+	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
+	if !ok {
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	user, err := user.FromJWT(token)
+	if err != nil {
+		log.Println("Error getting user from JWT:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// Get the ID of the mirror link item
+	id := c.Param("id")
+
+	// Get the files
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	files, err := user.GetFiles(ctx, h.Database, id)
+	if err != nil {
+		// TODO return response based on error
+		log.Println("Failed to get files in link:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// Return
+	return c.JSON(http.StatusOK, files)
+}

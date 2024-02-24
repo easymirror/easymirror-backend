@@ -24,6 +24,13 @@ type MirrorLink struct {
 	DurationMS int64     `json:"duration"`
 }
 
+type File struct {
+	ID         uuid.UUID `json:"id"`          // ID of the file
+	Name       string    `json:"name"`        // Name of the file
+	SizeBytes  int64     `json:"size"`        // Size of the file in bytes
+	UploadDate time.Time `json:"upload_date"` // Date the file was uploaded
+}
+
 // Returns a list of items a user has uploaded
 func (u user) MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]MirrorLink, error) {
 	if db == nil {
@@ -132,4 +139,47 @@ func (u user) DeleteMirrorLink(ctx context.Context, db *db.Database, linkID stri
 		return fmt.Errorf("error comitting tx: %w", err)
 	}
 	return nil
+}
+
+func (u user) GetFiles(ctx context.Context, db *db.Database, mirrorLinkID string) ([]File, error) {
+	if db == nil {
+		return nil, errors.New("database is nil")
+	}
+
+	// Begin TX
+	tx, err := db.PostgresConn.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("BeginTx error: %w", err)
+	}
+
+	// Get files
+	// We use a join here to ensure that we only select files that belongs to the user
+	query := `
+		SELECT files.id, files.name, files.size_bytes, files.upload_date
+		FROM mirroring_links INNER JOIN files
+		ON mirroring_links.id = files.mirror_link_id
+		WHERE mirroring_links.created_by_id=($1)
+		AND mirroring_links.id=($2);
+	`
+	rows, err := tx.Query(query, u.ID(), mirrorLinkID)
+	if err != nil {
+		return nil, fmt.Errorf("query error: %w", err)
+	}
+
+	// Parse the files
+	files := []File{}
+	defer rows.Close()
+	for rows.Next() {
+
+		// Scan the results into the appropriate variables.
+		f := File{}
+		if err := rows.Scan(&f.ID, &f.Name, &f.SizeBytes, &f.UploadDate); err != nil {
+			log.Println("Error scanning row:", err)
+			continue
+		}
+
+		// If there are no errors, update the temp values and append to array
+		files = append(files, f)
+	}
+	return files, nil
 }

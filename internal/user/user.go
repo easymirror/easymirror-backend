@@ -15,6 +15,7 @@ type User interface {
 	MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]MirrorLink, error) // Returns a list of items a user has uploaded
 	UpdateMirrorLinkName(ctx context.Context, db *db.Database, linkID, name string) error
 	DeleteMirrorLink(ctx context.Context, db *db.Database, linkID string) error
+	GetFiles(ctx context.Context, db *db.Database, linkID string) ([]File, error)
 }
 
 type user struct {
