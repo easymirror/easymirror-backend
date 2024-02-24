@@ -71,3 +71,35 @@ func (u user) MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]
 	// Return
 	return links, nil
 }
+
+func (u user) UpdateMirrorLinkName(
+	ctx context.Context,
+	db *db.Database,
+	linkID, name string,
+) error {
+	if db == nil {
+		return errors.New("database is nil")
+	}
+
+	// Begin tx
+	tx, err := db.PostgresConn.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("BeginTx error: %w", err)
+	}
+	_, err = tx.Exec(`
+		UPDATE mirroring_links
+		SET nickname = ($1)
+		WHERE id = ($2)
+		AND created_by_id = ($3);	
+	`, name, linkID, u.ID())
+
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("exec error: %w", err)
+	}
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("Commit error: %w", err)
+	}
+	return nil
+}

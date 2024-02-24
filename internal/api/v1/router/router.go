@@ -17,8 +17,10 @@ func Register(e *echo.Echo, db *db.Database) {
 		// TODO endpoint to get new session
 		// TODO endpoint to refresh token
 
-		// Endpoint to get a user's history
+		// History Endpoints
 		history := &history.Handler{Database: db}
 		v1.GET("/history", history.GetHistory)
+		v1.PATCH("/history/:id", history.UpdateHistoryItem)
+
 	}
 }

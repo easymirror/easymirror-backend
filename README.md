@@ -43,7 +43,7 @@ Source code to EasyMirror's backend
     - [ ] Endpoint that allows updating account info
 - [ ] History
     - [x] Endpoint that returns upload history
-    - [ ] Endpoint to allow renaming of history item
+    - [x] Endpoint to allow renaming of history item
     - [ ] Endpoint that gives list of files in history link
     - [ ] Endpoint to delete history item
 - Authentication
