@@ -40,7 +40,7 @@ Source code to EasyMirror's backend
 - [ ] Endpoint to allow uploads
 - [ ] Account endpoint
     - [x] Endpoint that returns account info
-    - [ ] Endpoint that allows updating account info
+    - [x] Endpoint that allows updating account info
 - [x] History
     - [x] Endpoint that returns upload history
     - [x] Endpoint to allow renaming of history item

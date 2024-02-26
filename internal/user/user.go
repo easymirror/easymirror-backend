@@ -17,6 +17,7 @@ type User interface {
 	UpdateMirrorLinkName(ctx context.Context, db *db.Database, linkID, name string) error
 	DeleteMirrorLink(ctx context.Context, db *db.Database, linkID string) error
 	GetFiles(ctx context.Context, db *db.Database, linkID string) ([]File, error)
+	Update(ctx context.Context, db *db.Database, k InfoKey, newVal string) error
 }
 
 type user struct {

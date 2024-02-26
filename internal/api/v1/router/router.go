@@ -21,6 +21,7 @@ func Register(e *echo.Echo, db *db.Database) {
 		// Account endpoints
 		account := &account.Handler{Database: db}
 		v1.GET("/user", account.GetUserInfo)
+		v1.PATCH("/user/update", account.UpdateUser)
 
 		// History Endpoints
 		history := &history.Handler{Database: db}

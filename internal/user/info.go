@@ -22,6 +22,15 @@ type Info struct {
 	NextRenew   time.Time `json:"next_renewal"`
 }
 
+type InfoKey int
+
+const (
+	FirstNameKey InfoKey = iota
+	LastNameKey
+	PhoneKey
+	UsernameKey
+)
+
 // Returns user info
 func (u user) Info(ctx context.Context, db *db.Database) (*Info, error) {
 	if db == nil {
@@ -44,10 +53,51 @@ func (u user) Info(ctx context.Context, db *db.Database) (*Info, error) {
 	// Parse the info
 	defer rows.Close()
 	info := &Info{ID: u.ID().String()}
-	for rows.Next() {
+	for rows.Next() { // TODO remove this loop since it is only 1 scan
 		if err = rows.Scan(&info.FirstName, &info.LastName, &info.Email, &info.Phone, &info.Username, &info.MemberSince, &info.NextRenew); err != nil {
 			log.Println("Error scanning row:", err)
 		}
 	}
 	return info, nil
+}
+
+func (u user) Update(ctx context.Context, db *db.Database, k InfoKey, newVal string) error {
+	if db == nil {
+		return errors.New("database is nil")
+	}
+
+	// Get the statement based on the key
+	var statement string = `
+		UPDATE users
+		SET %v=($1)
+		WHERE id=($2);
+	`
+	switch k {
+	case FirstNameKey:
+		statement = fmt.Sprintf(statement, "first_name")
+	case LastNameKey:
+		statement = fmt.Sprintf(statement, "last_name")
+	case PhoneKey:
+		statement = fmt.Sprintf(statement, "phone")
+	case UsernameKey:
+		statement = fmt.Sprintf(statement, "username")
+	default:
+		return errors.New("unsupported")
+	}
+
+	// Upate the database
+	tx, err := db.PostgresConn.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("BeginTx error: %w", err)
+	}
+	_, err = tx.Exec(statement, newVal, u.ID())
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("exec error: %w", err)
+	}
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("commit error: %w", err)
+	}
+	return nil
 }
