@@ -39,7 +39,7 @@ Source code to EasyMirror's backend
 - [x] Integrate postgresSQL
 - [ ] Endpoint to allow uploads
 - [ ] Account endpoint
-    - [ ] Endpoint that returns account info
+    - [x] Endpoint that returns account info
     - [ ] Endpoint that allows updating account info
 - [x] History
     - [x] Endpoint that returns upload history

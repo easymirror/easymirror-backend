@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/account"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/history"
 	"github.com/easymirror/easymirror-backend/internal/db"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -16,6 +17,10 @@ func Register(e *echo.Echo, db *db.Database) {
 
 		// TODO endpoint to get new session
 		// TODO endpoint to refresh token
+
+		// Account endpoints
+		account := &account.Handler{Database: db}
+		v1.GET("/user", account.GetUserInfo)
 
 		// History Endpoints
 		history := &history.Handler{Database: db}
