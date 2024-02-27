@@ -56,5 +56,3 @@ Source code to EasyMirror's backend
     - [x] JWT refresh every 12 hours
     - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
 - [ ] When deleting mirror links, cascade delete all relevant files too
-- [ ] When creating a new user, set the `member_since` column
-- [ ] Change `files` column `upload_date` to `timestamp`
