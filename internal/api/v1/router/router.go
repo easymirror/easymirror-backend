@@ -20,7 +20,7 @@ func Register(e *echo.Echo, db *db.Database) {
 		// TODO endpoint to refresh token
 
 		// Upload endpoints
-		upload := &upload.Handler{Database: db}
+		upload := upload.NewHandler(db)
 		v1.POST("/upload", upload.Upload)
 
 		// Account endpoints
