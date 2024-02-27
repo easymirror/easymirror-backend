@@ -38,12 +38,14 @@ Source code to EasyMirror's backend
 - [ ] Logs go into a MongoDB database
 - [x] Integrate postgresSQL
 - [ ] Upload endpoints
-    - [ ] Accept multiple files
+    - [x] Accept multiple files
     - [ ] For each file uploaded:
         - [ ] Add file data to `files` table in database
         - [ ] Upload to AWS S3 bucket
+            - [ ] Create a new folder for uploads that are uploaded together
+        - [ ] Upload to other hosts
         - [ ] After uploading to other hosts, delete from S3 bucket
-- [ ] Account endpoint
+- [x] Account endpoint
     - [x] Endpoint that returns account info
     - [x] Endpoint that allows updating account info
 - [x] History
@@ -56,3 +58,4 @@ Source code to EasyMirror's backend
     - [x] JWT refresh every 12 hours
     - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
 - [ ] When deleting mirror links, cascade delete all relevant files too
+- [ ] When creating a new user, set the `member_since` column
