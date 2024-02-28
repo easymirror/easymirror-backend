@@ -40,9 +40,9 @@ Source code to EasyMirror's backend
 - [ ] Upload endpoints
     - [x] Accept multiple files
     - [ ] For each file uploaded:
-        - [ ] Add file data to `files` table in database
-        - [ ] Upload to AWS S3 bucket
-            - [ ] Create a new folder for uploads that are uploaded together
+        - [x] Add file data to `files` table in database
+        - [x] Upload to AWS S3 bucket
+            - [x] Create a new folder for uploads that are uploaded together
         - [ ] Upload to other hosts
         - [ ] After uploading to other hosts, delete from S3 bucket
 - [x] Account endpoint
