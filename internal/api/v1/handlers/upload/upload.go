@@ -3,8 +3,11 @@ package upload
 import (
 	"bytes"
 	"context"
+	"database/sql"
+	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -72,46 +75,33 @@ func (h *Handler) Upload(c echo.Context) error {
 	}
 
 	// TODO: Add Goroutines to quickly process files
+	var src multipart.File
+	var srcBytes []byte
 	for _, file := range files {
-		src, err := file.Open()
+		src, err = file.Open()
 		if err != nil {
 			return err
 		}
-		defer src.Close()
-		b, err := io.ReadAll(src)
+		defer src.Close() // TODO unmake this defer?
+		srcBytes, err = io.ReadAll(src)
 		if err != nil {
 			log.Println("Error converting to bytes:", err)
 			continue
 		}
 
 		// Upload to AWS S3
-		// We use a manager to upload data to an object in a bucket.
-		// The upload manager breaks large data into parts and uploads the parts concurrently.
-		contentBuffer := bytes.NewReader(b)
-		uploader := manager.NewUploader(h.S3Client, func(u *manager.Uploader) {
-			u.PartSize = partMiBs
-		})
-		_, err = uploader.Upload(context.TODO(), &s3.PutObjectInput{
-			Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
-			Key:    aws.String(filepath.Join(mirrorID.String(), file.Filename)),
-			Body:   contentBuffer,
-		})
-		if err != nil {
-			log.Println("Could not upload file:", err)
+		if err = uploadToBucket(h.S3Client, srcBytes, mirrorID.String(), file.Filename); err != nil {
+			log.Println("Could not upload file to bucket:", err)
 			continue
 		}
 
 		// Upload file data to database
-		_, err = tx.Exec(`
-		INSERT INTO files (id, name, size_bytes, upload_date, mirror_link_id)
-		VALUES
-		(($1), ($2), ($3), ($4), ($5));
-		`, uuid.NewString(), file.Filename, file.Size, time.Now().UTC(), mirrorID)
-		if err != nil {
-			// TODO: handle this error better
+		if err = addFileData(tx, file, mirrorID.String()); err != nil {
 			log.Println("Error uploading to database:", err)
 		}
 	}
+
+	// Commit the changes to SQ
 	if err = tx.Commit(); err != nil {
 		log.Println("Error comitting tx:", err)
 		tx.Rollback()
@@ -126,4 +116,31 @@ func (h *Handler) Upload(c echo.Context) error {
 		"mirror_id": mirrorID,
 	}
 	return c.JSON(http.StatusOK, resp)
+}
+
+// addFileData adds a file's data to the database
+func addFileData(tx *sql.Tx, file *multipart.FileHeader, mirrorID string) error {
+	_, err := tx.Exec(`
+		INSERT INTO files (id, name, size_bytes, upload_date, mirror_link_id)
+		VALUES
+		(($1), ($2), ($3), ($4), ($5));
+		`, uuid.NewString(), file.Filename, file.Size, time.Now().UTC(), mirrorID)
+	return fmt.Errorf("tx.Exec error: %v", err)
+}
+
+// uploadToBucket uploads a given file to the AWS S3 bucket
+func uploadToBucket(c *s3.Client, srcBytes []byte, mirrorID, fileName string) error {
+	// We use a manager to upload data to an object in a bucket.
+	// The upload manager breaks large data into parts and uploads the parts concurrently.
+	contentBuffer := bytes.NewReader(srcBytes)
+	uploader := manager.NewUploader(c, func(u *manager.Uploader) {
+		u.PartSize = partMiBs
+	})
+
+	_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
+		Key:    aws.String(filepath.Join(mirrorID, fileName)),
+		Body:   contentBuffer,
+	})
+	return fmt.Errorf("uploader error: %w", err)
 }
