@@ -78,3 +78,16 @@ BenchmarkDownloadS3Manager-14                  1        13914433208 ns/op       
 PASS
 ok      github.com/easymirror/easymirror-backend/tests  15.567s
 ```
+### Upload Benchmarks
+Benchmark to see which uploading method will be most efficient. Benchmark(s) can be found [here](/tests/download_test.go).
+```
+Running tool: /usr/local/go/bin/go test -benchmem -run=^$ -bench ^(BenchmarkUploadWithPipe|BenchmarkUploadWithBuf)$ github.com/easymirror/easymirror-backend/tests
+
+goos: darwin
+goarch: arm64
+pkg: github.com/easymirror/easymirror-backend/tests
+BenchmarkUploadWithPipe-14    	       2	 738398916 ns/op	   83900 B/op	     509 allocs/op
+BenchmarkUploadWithBuf-14     	       1	22231242041 ns/op	187056504 B/op	    2018 allocs/op
+PASS
+ok  	github.com/easymirror/easymirror-backend/tests	24.843s
+```
