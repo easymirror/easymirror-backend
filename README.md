@@ -62,3 +62,4 @@ Source code to EasyMirror's backend
 - [ ] Refactor getting JWT token
     - [ ] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
     - [ ] 2. Refactor all code to get JWT token
+- [ ] own package for `mirrorlinks`?
