@@ -63,3 +63,18 @@ Source code to EasyMirror's backend
     - [ ] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
     - [ ] 2. Refactor all code to get JWT token
 - [ ] own package for `mirrorlinks`?
+
+## Benchmarks
+### Download benchmarks
+Benchmark to see which downloading method will be most efficient. Benchmark(s) can be found [here](/tests/download_test.go).
+```MD
+goos: darwin
+goarch: arm64
+pkg: github.com/easymirror/easymirror-backend/tests
+BenchmarkDownloadPresigned
+BenchmarkDownloadPresigned-14                  1        1515022625 ns/op          301816 B/op       3332 allocs/op
+BenchmarkDownloadS3Manager
+BenchmarkDownloadS3Manager-14                  1        13914433208 ns/op       84075549712 B/op            7245 allocs/op
+PASS
+ok      github.com/easymirror/easymirror-backend/tests  15.567s
+```
