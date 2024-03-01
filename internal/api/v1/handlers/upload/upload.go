@@ -30,6 +30,21 @@ const (
 	megabyte       = 1024 * 1024   //  1 megabyte
 )
 
+// Init is a handler for incoming GET requests.
+// It returns a valid mirror link ID along with a URL for users to upload their content to.
+func (h *Handler) Init(c echo.Context) error {
+	// TODO: Get user data from JWT token
+	// TODO: Generate a new mirror link
+	// TODO: Generate a presign URL
+	// TODO: Return data in response
+	return nil
+}
+
+// Upload is a handler for incoming POST requests.
+// It takes in files and mirrors to other hosts.
+//
+// Deprecated: This flow has been moved to a different flow.
+// Users should call the Init method.
 func (h *Handler) Upload(c echo.Context) error {
 	// Get user data from the JWT
 	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
