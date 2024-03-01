@@ -33,6 +33,15 @@ Source code to EasyMirror's backend
 | `main` | Production branch. Will be used by clients. | `main`
 
 
+## Mirroring Flow
+1. User makes a request to get a presigned URL to upload the files to AWS S3
+2. User makes a request telling server which hosts to mirror to
+3. Server mirrors to other hosts
+    1. Using the mirror ID (UUID), lookup the folder in the S3 bucket
+    2. For each file in folder:
+        1. Create a private presigned URL
+        2. Download the contents from the presigned URL and upload to other host
+
 ## TODOs
 - [ ] Add a `Project structure` section to the README
 - [ ] Logs go into a MongoDB database
