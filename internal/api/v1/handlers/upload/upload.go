@@ -36,8 +36,26 @@ func (h *Handler) Init(c echo.Context) error {
 	// TODO: Get user data from JWT token
 	// TODO: Generate a new mirror link
 	// TODO: Generate a presign URL
-	// TODO: Return data in response
-	return nil
+
+	// Return data in response
+	type Upload struct {
+		URI        string `json:"uri"`
+		ValidUntil string `json:"valid_until"`
+	}
+	type Response struct {
+		Success  bool   `json:"success"`
+		MirrorID string `json:"mirror_id"`
+		Upload   Upload `json:"upload"`
+	}
+	r := &Response{
+		Success:  true,
+		MirrorID: "", // TODO: add mirror ID
+		Upload: Upload{
+			URI:        "", // TODO: add upload URI
+			ValidUntil: "", //TODO: add valid until time
+		},
+	}
+	return c.JSON(http.StatusOK, r)
 }
 
 // Upload is a handler for incoming POST requests.
