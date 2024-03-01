@@ -125,7 +125,10 @@ func addFileData(tx *sql.Tx, file *multipart.FileHeader, mirrorID string) error 
 		VALUES
 		(($1), ($2), ($3), ($4), ($5));
 		`, uuid.NewString(), file.Filename, file.Size, time.Now().UTC(), mirrorID)
-	return fmt.Errorf("tx.Exec error: %v", err)
+	if err != nil {
+		return fmt.Errorf("tx.Exec error: %v", err)
+	}
+	return nil
 }
 
 // uploadToBucket uploads a given file to the AWS S3 bucket
@@ -142,5 +145,8 @@ func uploadToBucket(c *s3.Client, srcBytes []byte, mirrorID, fileName string) er
 		Key:    aws.String(filepath.Join(mirrorID, fileName)),
 		Body:   contentBuffer,
 	})
-	return fmt.Errorf("uploader error: %w", err)
+	if err != nil {
+		return fmt.Errorf("uploader error: %w", err)
+	}
+	return nil
 }
