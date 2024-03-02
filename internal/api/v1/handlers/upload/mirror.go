@@ -73,8 +73,16 @@ func (h *Handler) Mirror(c echo.Context) error {
 		presignedLinks[i] = url
 	}
 
-	// TODO: Parse which sites to mirror to
-	// TODO: Begin mirroring process
+	// Parse which sites to mirror to
+	for _, host := range body.Sites {
+		// TODO: Begin mirroring process
+		switch host {
+		case BunkrHost:
+		case GofileHost:
+		case PixelDrainHost:
+		case CyberfileHost:
+		}
+	}
 	// TODO: Save mirror links to `host_links` table
 	return nil
 }
