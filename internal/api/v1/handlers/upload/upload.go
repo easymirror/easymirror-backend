@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -30,12 +31,56 @@ const (
 	megabyte       = 1024 * 1024   //  1 megabyte
 )
 
+const (
+	presignExp = 6 * time.Hour
+)
+
 // Init is a handler for incoming GET requests.
 // It returns a valid mirror link ID along with a URL for users to upload their content to.
 func (h *Handler) Init(c echo.Context) error {
-	// TODO: Get user data from JWT token
-	// TODO: Generate a new mirror link
-	// TODO: Generate a presign URL
+	// Get user data from JWT token
+	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
+	if !ok {
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+	user, err := user.FromJWT(token)
+	if err != nil {
+		log.Println("Error getting user from JWT:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// Get the name of the file & mirror ID, if any
+	filename := c.QueryParam("n")
+	mirrorID := strings.TrimSpace(c.QueryParam("id"))
+	if mirrorID == "" {
+		// Generate a new mirror link if there is none
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		tx, err := h.PostgresConn.BeginTx(ctx, nil)
+		if err != nil {
+			log.Println("Error creating transaction:", err)
+			return c.String(http.StatusInternalServerError, "Internal server error")
+		}
+		mirrorID = uuid.NewString()
+		_, err = tx.Exec(`
+		INSERT INTO mirroring_links (id, created_by_id, upload_date)
+		VALUES
+		(($1), ($2), ($3));
+	`, mirrorID, user.ID(), time.Now().UTC())
+		if err != nil {
+			log.Println("Error creating new mirror link:", err)
+			return c.String(http.StatusInternalServerError, "Internal server error")
+		}
+	}
+
+	// TODO: Validate if the ID exists?
+
+	// Generate a presign URL
+	presignURL, err := putPresignURL(h.S3Client, presignExp, mirrorID, filename)
+	if err != nil {
+		log.Println("Error creating new presign url:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
 
 	// Return data in response
 	type Upload struct {
@@ -49,10 +94,10 @@ func (h *Handler) Init(c echo.Context) error {
 	}
 	r := &Response{
 		Success:  true,
-		MirrorID: "", // TODO: add mirror ID
+		MirrorID: mirrorID,
 		Upload: Upload{
-			URI:        "", // TODO: add upload URI
-			ValidUntil: "", //TODO: add valid until time
+			URI:        presignURL,
+			ValidUntil: time.Now().Add(presignExp).Format(time.RFC3339),
 		},
 	}
 	return c.JSON(http.StatusOK, r)
@@ -182,4 +227,18 @@ func uploadToBucket(c *s3.Client, srcBytes []byte, mirrorID, fileName string) er
 		return fmt.Errorf("uploader error: %w", err)
 	}
 	return nil
+}
+
+func putPresignURL(s3client *s3.Client, expiration time.Duration, mirrorID, filename string) (string, error) {
+	presignClient := s3.NewPresignClient(s3client)
+	presignedUrl, err := presignClient.PresignPutObject(context.Background(),
+		&s3.PutObjectInput{
+			Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
+			Key:    aws.String(filepath.Join(mirrorID, filename)),
+		},
+		s3.WithPresignExpires(expiration))
+	if err != nil {
+		return "", fmt.Errorf("presignPutObject error: %w", err)
+	}
+	return presignedUrl.URL, nil
 }
