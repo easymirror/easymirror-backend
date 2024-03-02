@@ -14,6 +14,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type mirrorHost string
+
+const (
+	GofileHost     mirrorHost = "gofile"
+	BunkrHost      mirrorHost = "bunkr"
+	PixelDrainHost mirrorHost = "pixeldrain"
+	CyberfileHost  mirrorHost = "cyberfile"
+)
+
 // Mirror handles incoming PUT requests for mirroring sites.
 func (h *Handler) Mirror(c echo.Context) error {
 	// Get user data from the JWT token
@@ -29,8 +38,8 @@ func (h *Handler) Mirror(c echo.Context) error {
 
 	// Parse the body
 	body := &struct {
-		MirrorID string   `json:"id"`
-		Sites    []string `json:"sites"`
+		MirrorID string       `json:"id"`
+		Sites    []mirrorHost `json:"sites"`
 	}{}
 	err = (&echo.DefaultBinder{}).BindBody(c, &body)
 	if err != nil {
@@ -66,6 +75,7 @@ func (h *Handler) Mirror(c echo.Context) error {
 
 	// TODO: Parse which sites to mirror to
 	// TODO: Begin mirroring process
+	// TODO: Save mirror links to `host_links` table
 	return nil
 }
 
