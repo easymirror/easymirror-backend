@@ -2,7 +2,6 @@ package upload
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -24,7 +23,6 @@ func NewHandler(db *db.Database) *Handler {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("S3 Region:", cfg.Region)
 
 	return &Handler{
 		Database: db,
