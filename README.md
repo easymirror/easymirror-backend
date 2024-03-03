@@ -90,13 +90,12 @@ ok      github.com/easymirror/easymirror-backend/tests  15.567s
 ### Upload Benchmarks
 Benchmark to see which uploading method will be most efficient. Benchmark(s) can be found [here](/tests/download_test.go).
 ```
-Running tool: /usr/local/go/bin/go test -benchmem -run=^$ -bench ^(BenchmarkUploadWithPipe|BenchmarkUploadWithBuf)$ github.com/easymirror/easymirror-backend/tests
-
 goos: darwin
 goarch: arm64
 pkg: github.com/easymirror/easymirror-backend/tests
-BenchmarkUploadWithPipe-14    	       2	 738398916 ns/op	   83900 B/op	     509 allocs/op
-BenchmarkUploadWithBuf-14     	       1	22231242041 ns/op	187056504 B/op	    2018 allocs/op
+BenchmarkUploadWithPipe-14    	1000000000	         0.08321 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUploadWithBuf-14     	       1	1275108626 ns/op	   28520 B/op	     157 allocs/op
+BenchmarkRealWorldPipe-14     	       1	2171659833 ns/op	  373672 B/op	    2127 allocs/op
 PASS
-ok  	github.com/easymirror/easymirror-backend/tests	24.843s
+ok  	github.com/easymirror/easymirror-backend/tests	4.652s
 ```
