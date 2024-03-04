@@ -12,9 +12,21 @@ import (
 )
 
 type Folder struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-	Link string `json:"identifier"`
+	ID              int    `json:"id"`
+	Name            string `json:"name"`
+	Link            string
+	Identifier      string `json:"identifier"`
+	Enabled         int    `json:"enabled"`
+	Timestamp       int    `json:"timestamp"`
+	EditedAt        int    `json:"editedAt"`
+	ZipGeneratedAt  int    `json:"zipGeneratedAt"`
+	Download        bool   `json:"download"`
+	Public          bool   `json:"public"`
+	Description     string `json:"description"`
+	Uploads         int    `json:"uploads"`
+	Size            int    `json:"size"`
+	ZipSize         any    `json:"zipSize"`
+	DescriptionHTML string `json:"descriptionHtml"`
 }
 
 // createFolder creates a new folder on Bunkr's API.
@@ -88,23 +100,22 @@ func getFolder(ctx context.Context, id string) (*Folder, error) {
 	req, _ := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		baseURI+"/albums",
+		baseURI+"/albums/0",
 		nil,
 	)
 	req.Header = http.Header{
 		"sec-ch-ua":          {`"Chromium";v="122", "Not(A:Brand";v="24", "Brave";v="122"`},
 		"accept":             {"application/json, text/plain, */*"},
-		"simple":             {"1"},
 		"sec-ch-ua-mobile":   {"?0"},
 		"user-agent":         {userAgent},
 		"token":              {os.Getenv("BUNKR_API_KEY")},
 		"sec-ch-ua-platform": {`"macOS"`},
 		"sec-gpc":            {"1"},
-		"accept-language":    {`en-US,en;q=0.6`},
-		"sec-fetch-site":     {`same-origin`},
+		"accept-language":    {"en-US,en;q=0.6"},
+		"sec-fetch-site":     {"same-origin"},
 		"sec-fetch-mode":     {"cors"},
 		"sec-fetch-dest":     {"empty"},
-		"referer":            {`https://app.bunkrr.su/dashboard`},
+		"referer":            {"https://app.bunkrr.su/dashboard"},
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -121,9 +132,10 @@ func parseGetFolder(resp *http.Response, id string) (*Folder, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	response := &struct {
-		Success bool     `json:"success"`
-		Folders []Folder `json:"albums"`
-		Count   int      `json:"count"`
+		Success    bool     `json:"success"`
+		Folders    []Folder `json:"albums"`
+		Count      int      `json:"count"`
+		HomeDomain string   `json:"homeDomain"`
 	}{}
 	if err := json.Unmarshal(body, response); err != nil {
 		return nil, fmt.Errorf("unmarshal error: %w", err)
@@ -132,6 +144,11 @@ func parseGetFolder(resp *http.Response, id string) (*Folder, error) {
 	// Look for the folder
 	for _, folder := range response.Folders {
 		if strconv.Itoa(folder.ID) == id {
+			// Set the link
+			if response.HomeDomain == "" {
+				response.HomeDomain = "https://bunkr.sk"
+			}
+			folder.Link = fmt.Sprintf("%v/a/%v", response.HomeDomain, folder.Identifier)
 			return &folder, nil
 		}
 	}
