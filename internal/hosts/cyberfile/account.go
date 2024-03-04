@@ -22,7 +22,7 @@ func NewAccount(username, password string) Account {
 }
 
 // newAccount creates a new account with given credentials
-func newAccount(username, password string) Account {
+func newAccount(username, password string) *account {
 	return &account{
 		username: username,
 		password: password,
