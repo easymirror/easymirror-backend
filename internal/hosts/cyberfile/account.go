@@ -3,11 +3,11 @@ package cyberfile
 import "context"
 
 type Account interface {
-	Username() string
-	Password() string
-	AccessToken() string
-	AccountID() string
-	GetAccessToken(ctx context.Context) (string, error)
+	Username() string                                   // Username is a getter function that returns the username
+	Password() string                                   // Password is a getter function that returns the password
+	AccessToken() string                                // AccessToken is a getter function that returns the access token
+	AccountID() string                                  // AccountID is a getter function that returns the access token
+	GetAccessToken(ctx context.Context) (string, error) // GetAccessToken gets and sets an access token to the account
 }
 
 type account struct {
