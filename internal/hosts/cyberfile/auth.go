@@ -11,8 +11,8 @@ import (
 	"os"
 )
 
-// getAccessToken logs into the account and returns an access token
-func getAccessToken(ctx context.Context) (string, error) {
+// getAccessToken gets and sets an access token to the account
+func (a *account) getAccessToken(ctx context.Context) (string, error) {
 	// Create URL
 	u, err := url.Parse(baseURI + "/authorize")
 	if err != nil {
@@ -36,11 +36,11 @@ func getAccessToken(ctx context.Context) (string, error) {
 	}
 
 	// Parse Response
-	return parseAccessToken(resp)
+	return parseAccessToken(resp, a)
 }
 
 // parseAccessToken parses the response from the getAccessToken token
-func parseAccessToken(resp *http.Response) (string, error) {
+func parseAccessToken(resp *http.Response, a *account) (string, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	response := &struct {
@@ -61,5 +61,7 @@ func parseAccessToken(resp *http.Response) (string, error) {
 	if response.Status != "success" {
 		return "", errors.New(response.Error)
 	}
+	a.accessToken = response.Data.AccessToken
+	a.accountID = response.Data.AccountID
 	return response.Data.AccessToken, nil
 }
