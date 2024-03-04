@@ -3,6 +3,7 @@ package pixeldrain
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -13,11 +14,33 @@ import (
 )
 
 // Upload is a wrapper function to upload to PixelDrain's API.
-func Upload(ctx context.Context, presignURI string) (string, error) {
-	return upload(ctx, presignURI)
+// If successful, it returns a link to the folder with the uploaded files
+func Upload(ctx context.Context, mirrorID string, presignURIs []string) (string, error) {
+	if len(presignURIs) < 1 {
+		return "", errors.New("no presigned URLs")
+	}
+
+	// Upload the files to PixelDrain's API
+	ids := []string{}
+	for _, uri := range presignURIs {
+		fileID, err := upload(ctx, uri)
+		if err != nil {
+			log.Println("Error uploading file:", err)
+			continue
+		}
+		ids = append(ids, fileID)
+	}
+
+	// Create a new folder
+	folderID, err := newFolder(ctx, mirrorID, ids)
+	if err != nil {
+		return "", fmt.Errorf("newFolder error: %w", err)
+	}
+	return folderBaseURL + "/" + folderID, nil
 }
 
-// upload upload's a given file to PixelDrain's API. If the body is successfully uploaded, the ID of the upload is returned.
+// upload upload's a given file to PixelDrain's API.
+// If the body is successfully uploaded, the ID of the upload is returned.
 func upload(ctx context.Context, presignURI string) (string, error) {
 	// Get the file from the presigned URL.
 	req, _ := http.NewRequestWithContext(ctx, "GET", presignURI, nil)
@@ -78,7 +101,6 @@ func parseUpload(r *http.Response) (string, error) {
 	// Read the response
 	defer r.Body.Close()
 	body, _ := io.ReadAll(r.Body)
-	log.Println(string(body))
 
 	// Parse the response
 	response := &struct {

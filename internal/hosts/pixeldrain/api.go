@@ -6,7 +6,9 @@ import (
 )
 
 const (
-	baseURL = "https://pixeldrain.com/api"
+	baseURL       = "https://pixeldrain.com/api" // Base URL to upload to use the API
+	fileBaseURL   = "https://pixeldrain.com/u"   // Base URL of individual uploaded files
+	folderBaseURL = "https://pixeldrain.com/l"   // Base URL of folders
 )
 
 // apiKey Returns the API key from the environment variable
