@@ -1,7 +1,10 @@
 package common
 
 import (
+	"fmt"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -18,4 +21,13 @@ func getCurrentDirectory() string {
 		panic("Failed to get current directory")
 	}
 	return filepath.Dir(ex)
+}
+
+// FilenameFromURI returns the name of a file from a given URI
+func FilenameFromURI(uri string) (string, error) {
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", fmt.Errorf("parse error: %w", err)
+	}
+	return path.Base(u.Path), nil
 }
