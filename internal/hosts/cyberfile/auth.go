@@ -12,7 +12,7 @@ import (
 )
 
 // getAccessToken gets and sets an access token to the account
-func (a *account) getAccessToken(ctx context.Context) (string, error) {
+func (a *account) GetAccessToken(ctx context.Context) (string, error) {
 	// Create URL
 	u, err := url.Parse(baseURI + "/authorize")
 	if err != nil {

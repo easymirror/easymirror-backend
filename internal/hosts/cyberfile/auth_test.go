@@ -27,7 +27,7 @@ func TestGetAuthToken(t *testing.T) {
 	// Run test
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	token, err := a.getAccessToken(ctx)
+	token, err := a.GetAccessToken(ctx)
 	if err != nil {
 		t.Fatalf("Failed to get token: %v", err)
 	}
