@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -17,8 +18,38 @@ const (
 	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 )
 
-// func Upload(ctx context.Context, mirrorID string, presignURIs []string) (string, error) {
-// }
+// // Upload upload's files to a folder on Bunkr.
+// If successful, the URI of the folder is returned
+func Upload(ctx context.Context, mirrorID string, sourceURIs []string) (string, error) {
+	if len(sourceURIs) == 0 {
+		return "", errors.New("no source uri")
+	}
+
+	// Create Folder
+	folderID, err := createFolder(
+		ctx,
+		fmt.Sprintf("Mirror %v files", mirrorID),
+		true,
+		true,
+	)
+	if err != nil {
+		return "", fmt.Errorf("create folder error: %w", err)
+	}
+
+	// Upload to folder
+	for _, uri := range sourceURIs {
+		if _, err := upload(ctx, folderID, uri); err != nil {
+			log.Println("Error uploading file:", err)
+		}
+	}
+
+	// Return URI of the folder
+	folder, err := getFolder(ctx, folderID)
+	if err != nil {
+		return "", fmt.Errorf("error getting folder")
+	}
+	return folder.Link, nil
+}
 
 // getUploadLink returns a URI where files can be uploaded to
 func getUploadLink(ctx context.Context) (string, error) {
