@@ -6,9 +6,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/easymirror/easymirror-backend/internal/hosts/bunkr"
+	"github.com/easymirror/easymirror-backend/internal/hosts/pixeldrain"
 	"github.com/easymirror/easymirror-backend/internal/user"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -74,17 +77,50 @@ func (h *Handler) Mirror(c echo.Context) error {
 	}
 
 	// Parse which sites to mirror to
-	for _, host := range body.Sites {
-		// TODO: Begin mirroring process
-		switch host {
-		case BunkrHost:
-		case GofileHost:
-		case PixelDrainHost:
-		case CyberfileHost:
+	go func() {
+		// Make sure sites are unique so we only upload once to the host
+		siteMap := map[mirrorHost]bool{}
+		for _, chosen := range body.Sites {
+			siteMap[chosen] = true
 		}
+
+		// TODO: Defer delete from AWS S3
+		for host := range siteMap {
+			switch host {
+			case BunkrHost:
+				log.Println("Uploading file to Bunkr. Presigned link:", presignedLinks)
+				folder, err := bunkr.Upload(context.TODO(), body.MirrorID, presignedLinks)
+				if err != nil {
+					log.Println("Error uploading to bunk:", err)
+					continue
+				}
+
+				// TODO: Do something with the ID
+				fmt.Printf("Folder Link: %q\n", folder)
+			case GofileHost:
+
+			case PixelDrainHost:
+				log.Println("Uploading file to pixeldrain. Presigned link:", presignedLinks)
+				folder, err := pixeldrain.Upload(context.TODO(), body.MirrorID, presignedLinks)
+				if err != nil {
+					log.Println("Error uploading to pixel drain:", err)
+					continue
+				}
+
+				// TODO: Do something with the ID
+				fmt.Printf("Folder Link: %q\n", folder)
+			case CyberfileHost:
+			}
+		}
+		// TODO: Save mirror links to `host_links` table
+	}()
+
+	// Return Response
+	response := map[string]any{
+		"success":   true,
+		"mirror_id": body.MirrorID,
 	}
-	// TODO: Save mirror links to `host_links` table
-	return nil
+	return c.JSON(http.StatusOK, response)
 }
 
 // getPresignURL creates a presigned URL for a given file key so users can make GET requests to
@@ -94,7 +130,8 @@ func getPresignURL(s3client *s3.Client, fileKey *string) (string, error) {
 		&s3.GetObjectInput{
 			Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
 			Key:    fileKey,
-		})
+		},
+		s3.WithPresignExpires(24*time.Hour))
 	if err != nil {
 		return "", fmt.Errorf("getPresignURL error: %w", err)
 	}
