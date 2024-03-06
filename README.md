@@ -67,7 +67,7 @@ Source code to EasyMirror's backend
     - [x] JWT refresh every 12 hours
     - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
 - [ ] When deleting mirror links, cascade delete all relevant files too
-- [ ] When creating a new user, set the `member_since` column
+- [x] When creating a new user, set the `member_since` column
 - [ ] Refactor getting JWT token
     - [ ] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
     - [ ] 2. Refactor all code to get JWT token

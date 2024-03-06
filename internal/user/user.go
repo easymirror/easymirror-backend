@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/easymirror/easymirror-backend/internal/db"
 	"github.com/golang-jwt/jwt/v5"
@@ -39,10 +40,10 @@ func Create(db *db.Database) (User, error) {
 		return nil, fmt.Errorf("db.PostgresConn.Begin error: %w", err)
 	}
 	_, err = tx.Exec(`
-	INSERT INTO users (id)
+	INSERT INTO users (id, member_since)
 	VALUES
-	($1);
-	`, user.ID())
+	(($1), ($2));
+	`, user.ID(), time.Now().UTC())
 	if err != nil {
 		return nil, fmt.Errorf("error executing tx: %w", err)
 	}
