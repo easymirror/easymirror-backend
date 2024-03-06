@@ -84,12 +84,19 @@ func (h *Handler) Mirror(c echo.Context) error {
 			siteMap[chosen] = true
 		}
 
+		// Start TX
+		tx, err := h.Database.PostgresConn.Begin()
+		if err != nil {
+			log.Println("Error creating transaction:", err)
+			return
+		}
+
 		// TODO: Defer delete from AWS S3
 		for host := range siteMap {
 			switch host {
 			case BunkrHost:
 				log.Println("Uploading file to Bunkr. Presigned link:", presignedLinks)
-				folder, err := bunkr.Upload(context.TODO(), body.MirrorID, presignedLinks)
+				folder, err := bunkr.UploadTx(context.TODO(), tx, body.MirrorID, presignedLinks)
 				if err != nil {
 					log.Println("Error uploading to bunk:", err)
 					continue
@@ -101,7 +108,7 @@ func (h *Handler) Mirror(c echo.Context) error {
 
 			case PixelDrainHost:
 				log.Println("Uploading file to pixeldrain. Presigned link:", presignedLinks)
-				folder, err := pixeldrain.Upload(context.TODO(), body.MirrorID, presignedLinks)
+				folder, err := pixeldrain.UploadTX(context.TODO(), tx, body.MirrorID, presignedLinks)
 				if err != nil {
 					log.Println("Error uploading to pixel drain:", err)
 					continue
@@ -112,7 +119,14 @@ func (h *Handler) Mirror(c echo.Context) error {
 			case CyberfileHost:
 			}
 		}
-		// TODO: Save mirror links to `host_links` table
+
+		// Save mirror links to `host_links` table
+		log.Println("Saving to database...")
+		if err = tx.Commit(); err != nil {
+			log.Println("Error committing tx:", err)
+			tx.Rollback()
+			return
+		}
 	}()
 
 	// Return Response

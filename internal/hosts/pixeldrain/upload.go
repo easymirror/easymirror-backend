@@ -2,6 +2,7 @@ package pixeldrain
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -37,6 +38,49 @@ func Upload(ctx context.Context, mirrorID string, presignURIs []string) (string,
 		return "", fmt.Errorf("newFolder error: %w", err)
 	}
 	return folderBaseURL + "/" + folderID, nil
+}
+
+// UploadTX is a wrapper function to upload to PixelDrain's API.
+// It takes in a SQL tx, but does NOT commit it.
+// If successful, it returns a link to the folder with the uploaded files
+func UploadTX(ctx context.Context, tx *sql.Tx, mirrorID string, presignURIs []string) (string, error) {
+	if len(presignURIs) < 1 {
+		return "", errors.New("no presigned URLs")
+	}
+
+	// Upload the files to PixelDrain's API
+	ids := []string{}
+	for _, uri := range presignURIs {
+		fileID, err := upload(ctx, uri)
+		if err != nil {
+			log.Println("Error uploading file:", err)
+			continue
+		}
+		ids = append(ids, fileID)
+	}
+
+	// Create a new folder
+	folderID, err := newFolder(ctx, mirrorID, ids)
+	if err != nil {
+		return "", fmt.Errorf("newFolder error: %w", err)
+	}
+	folderLink := folderBaseURL + "/" + folderID
+
+	// Commit to TX
+	// Add to `host_links` table
+	// This statement allows you to insert a new row into a table,
+	// or update an existing row if a conflict (e.g., duplicate key violation) occurs
+	statement := `
+		INSERT INTO host_links (mirror_id, pixeldrain)
+		VALUES (($1), ($2))
+		ON CONFLICT (mirror_id) 
+		DO UPDATE
+		SET pixeldrain = EXCLUDED.pixeldrain;
+	`
+	if _, err = tx.Exec(statement, mirrorID, folderLink); err != nil {
+		return "", fmt.Errorf("exec tx error: %w", err)
+	}
+	return folderLink, nil
 }
 
 // upload upload's a given file to PixelDrain's API.

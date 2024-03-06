@@ -2,6 +2,7 @@ package bunkr
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -18,7 +19,7 @@ const (
 	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 )
 
-// // Upload upload's files to a folder on Bunkr.
+// Upload upload's files to a folder on Bunkr.
 // If successful, the URI of the folder is returned
 func Upload(ctx context.Context, mirrorID string, sourceURIs []string) (string, error) {
 	if len(sourceURIs) == 0 {
@@ -47,6 +48,54 @@ func Upload(ctx context.Context, mirrorID string, sourceURIs []string) (string, 
 	folder, err := getFolder(ctx, folderID)
 	if err != nil {
 		return "", fmt.Errorf("error getting folder")
+	}
+	return folder.Link, nil
+}
+
+// UploadTx upload's files to a folder on Bunkr with a given TX. Adds an entry to the database but does not committ the TX.
+// If successful, the URI of the folder is returned
+func UploadTx(ctx context.Context, tx *sql.Tx, mirrorID string, sourceURIs []string) (string, error) {
+	if len(sourceURIs) == 0 {
+		return "", errors.New("no source uri")
+	}
+
+	// Create Folder
+	folderID, err := createFolder(
+		ctx,
+		fmt.Sprintf("Mirror %v files", mirrorID),
+		true,
+		true,
+	)
+	if err != nil {
+		return "", fmt.Errorf("create folder error: %w", err)
+	}
+
+	// Upload to folder
+	for _, uri := range sourceURIs {
+		if _, err := upload(ctx, folderID, uri); err != nil {
+			log.Println("Error uploading file:", err)
+		}
+	}
+
+	// Return URI of the folder
+	folder, err := getFolder(ctx, folderID)
+	if err != nil {
+		return "", fmt.Errorf("error getting folder")
+	}
+
+	// Add to `host_links` table
+	// This statement allows you to insert a new row into a table,
+	// or update an existing row if a conflict (e.g., duplicate key violation) occurs.
+	// This is known as UPSERT
+	statement := `
+		INSERT INTO host_links (mirror_id, bunkr)
+		VALUES (($1), ($2))
+		ON CONFLICT (mirror_id) 
+		DO UPDATE
+		SET bunkr = EXCLUDED.bunkr;
+	`
+	if _, err = tx.Exec(statement, mirrorID, folder.Link); err != nil {
+		return "", fmt.Errorf("exec tx error: %w", err)
 	}
 	return folder.Link, nil
 }
