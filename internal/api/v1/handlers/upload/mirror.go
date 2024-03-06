@@ -53,28 +53,29 @@ func (h *Handler) Mirror(c echo.Context) error {
 	fmt.Println(user) // TODO: Delete this
 
 	// Get files from AWS S3 bucket
-	result, err := h.S3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
-		Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
-		Prefix: aws.String(body.MirrorID + "/"),
-	})
+	files, err := getFilesInS3Dir(h.S3Client, body.MirrorID)
 	if err != nil {
 		log.Println("Error getting folder:", err)
 		return c.String(http.StatusInternalServerError, "Internal server error")
 	}
 
-	presignedLinks := make([]string, *result.KeyCount)
-	for i, file := range result.Contents {
+	var presignedLinks []string
+	for _, file := range files {
 		// Create presigned URLs for each file in bucket
 		if file.Key == nil {
 			log.Println("Cannot create presign url. Name is empty")
 			continue
 		}
+		if *file.Key == body.MirrorID+"/" { // Skip the folder itself
+			continue
+		}
+
 		url, err := getPresignURL(h.S3Client, file.Key)
 		if err != nil {
 			log.Println("Error creating presigned url:", err)
 			continue
 		}
-		presignedLinks[i] = url
+		presignedLinks = append(presignedLinks, url)
 	}
 
 	// Parse which sites to mirror to
