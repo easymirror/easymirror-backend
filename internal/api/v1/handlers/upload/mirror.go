@@ -46,6 +46,7 @@ func (h *Handler) Mirror(c echo.Context) error {
 		return err
 	}
 	fmt.Println(user) // TODO: Delete this
+	// TODO Validate user has access to mirror ID
 
 	// Get files from AWS S3 bucket
 	files, err := getFilesInS3Dir(h.S3Client, body.MirrorID)
