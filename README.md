@@ -48,7 +48,7 @@ Source code to EasyMirror's backend
 - [x] Integrate postgresSQL
 - [x] Upload endpoints
     - [x] Accept multiple files
-    - [ ] For each file uploaded:
+    - [x] For each file uploaded:
         - [x] Add file data to `files` table in database
         - [x] Upload to AWS S3 bucket
             - [x] Create a new folder for uploads that are uploaded together
@@ -66,7 +66,7 @@ Source code to EasyMirror's backend
     - [x] When a new user joins, set a JWT
     - [x] JWT refresh every 12 hours
     - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
-- [ ] When deleting mirror links, cascade delete all relevant files too
+- [x] When deleting mirror links, cascade delete all relevant files too
 - [x] When creating a new user, set the `member_since` column
 - [x] Refactor getting JWT token
     - [x] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
