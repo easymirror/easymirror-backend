@@ -9,19 +9,13 @@ import (
 	"time"
 
 	"github.com/easymirror/easymirror-backend/internal/user"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
 // GetHistory returns a list of items a user has uploaded
 func (h *Handler) GetHistory(c echo.Context) error {
 	// Get the user-id from the JWT token
-	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
-	if !ok {
-		return c.String(http.StatusInternalServerError, "Internal server error")
-	}
-
-	user, err := user.FromJWT(token)
+	user, err := user.FromEcho(c)
 	if err != nil {
 		log.Println("Error getting user from JWT:", err)
 		return c.String(http.StatusInternalServerError, "Internal server error")
@@ -50,12 +44,7 @@ func (h *Handler) GetHistory(c echo.Context) error {
 // UpdateHistoryItem updates the name of a given history item
 func (h *Handler) UpdateHistoryItem(c echo.Context) error {
 	// Get the user-id from the JWT token
-	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
-	if !ok {
-		return c.String(http.StatusInternalServerError, "Internal server error")
-	}
-
-	user, err := user.FromJWT(token)
+	user, err := user.FromEcho(c)
 	if err != nil {
 		log.Println("Error getting user from JWT:", err)
 		return c.String(http.StatusInternalServerError, "Internal server error")
@@ -90,12 +79,7 @@ func (h *Handler) UpdateHistoryItem(c echo.Context) error {
 
 func (h *Handler) DeleteHistoryItem(c echo.Context) error {
 	// Get the user-id from the JWT token
-	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
-	if !ok {
-		return c.String(http.StatusInternalServerError, "Internal server error")
-	}
-
-	user, err := user.FromJWT(token)
+	user, err := user.FromEcho(c)
 	if err != nil {
 		log.Println("Error getting user from JWT:", err)
 		return c.String(http.StatusInternalServerError, "Internal server error")
@@ -121,12 +105,7 @@ func (h *Handler) DeleteHistoryItem(c echo.Context) error {
 
 func (h *Handler) GetFiles(c echo.Context) error {
 	// Get the user-id from the JWT token
-	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
-	if !ok {
-		return c.String(http.StatusInternalServerError, "Internal server error")
-	}
-
-	user, err := user.FromJWT(token)
+	user, err := user.FromEcho(c)
 	if err != nil {
 		log.Println("Error getting user from JWT:", err)
 		return c.String(http.StatusInternalServerError, "Internal server error")

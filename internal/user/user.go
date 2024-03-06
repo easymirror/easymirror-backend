@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"time"
 
 	"github.com/easymirror/easymirror-backend/internal/db"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 type User interface {
@@ -82,4 +85,20 @@ func FromJWT(t *jwt.Token) (User, error) {
 		return nil, fmt.Errorf("parse uuid error: %w", err)
 	}
 	return &user{id: uId}, nil
+}
+
+// FromEcho pulls a JWT token from an echo context.
+func FromEcho(c echo.Context) (User, error) {
+	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `jwt-token` key
+	if !ok {
+		log.Println("Error with JWT token.")
+		return nil, c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	user, err := FromJWT(token)
+	if err != nil {
+		log.Println("Error getting user from JWT:", err)
+		return nil, c.String(http.StatusInternalServerError, "Internal server error")
+	}
+	return user, err
 }

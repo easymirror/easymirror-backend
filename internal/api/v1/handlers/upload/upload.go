@@ -18,7 +18,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/easymirror/easymirror-backend/internal/user"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -39,11 +38,7 @@ const (
 // It returns a valid mirror link ID along with a URL for users to upload their content to.
 func (h *Handler) Init(c echo.Context) error {
 	// Get user data from JWT token
-	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
-	if !ok {
-		return c.String(http.StatusInternalServerError, "Internal server error")
-	}
-	user, err := user.FromJWT(token)
+	user, err := user.FromEcho(c)
 	if err != nil {
 		log.Println("Error getting user from JWT:", err)
 		return c.String(http.StatusInternalServerError, "Internal server error")
@@ -115,11 +110,7 @@ func (h *Handler) Init(c echo.Context) error {
 // Users should call the Init method.
 func (h *Handler) Upload(c echo.Context) error {
 	// Get user data from the JWT
-	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
-	if !ok {
-		return c.String(http.StatusInternalServerError, "Internal server error")
-	}
-	user, err := user.FromJWT(token)
+	user, err := user.FromEcho(c)
 	if err != nil {
 		log.Println("Error getting user from JWT:", err)
 		return c.String(http.StatusInternalServerError, "Internal server error")
