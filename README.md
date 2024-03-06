@@ -46,14 +46,14 @@ Source code to EasyMirror's backend
 - [ ] Add a `Project structure` section to the README
 - [ ] Logs go into a MongoDB database
 - [x] Integrate postgresSQL
-- [ ] Upload endpoints
+- [x] Upload endpoints
     - [x] Accept multiple files
     - [ ] For each file uploaded:
         - [x] Add file data to `files` table in database
         - [x] Upload to AWS S3 bucket
             - [x] Create a new folder for uploads that are uploaded together
-        - [ ] Upload to other hosts
-        - [ ] After uploading to other hosts, delete from S3 bucket
+        - [x] Upload to other hosts
+        - [x] After uploading to other hosts, delete from S3 bucket
 - [x] Account endpoint
     - [x] Endpoint that returns account info
     - [x] Endpoint that allows updating account info
