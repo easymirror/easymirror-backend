@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/easymirror/easymirror-backend/internal/hosts/bunkr"
 	"github.com/easymirror/easymirror-backend/internal/hosts/pixeldrain"
 	"github.com/easymirror/easymirror-backend/internal/user"
@@ -91,7 +92,9 @@ func (h *Handler) Mirror(c echo.Context) error {
 			return
 		}
 
-		// TODO: Defer delete from AWS S3
+		// Delete from AWS S3 when done
+		defer deleteFromS3(h.S3Client, body.MirrorID)
+
 		for host := range siteMap {
 			switch host {
 			case BunkrHost:
@@ -150,4 +153,41 @@ func getPresignURL(s3client *s3.Client, fileKey *string) (string, error) {
 		return "", fmt.Errorf("getPresignURL error: %w", err)
 	}
 	return presignedUrl.URL, nil
+}
+
+// deleteFromS3 deletes a given object in AWS S3
+func deleteFromS3(s3client *s3.Client, mirrorID string) error {
+	// List all the files in the directory
+	objects, err := getFilesInS3Dir(s3client, mirrorID)
+	if err != nil {
+		return fmt.Errorf("failed to get files: %w", err)
+	}
+	ids := make([]types.ObjectIdentifier, len(objects))
+	for i, obj := range objects {
+		ids[i] = types.ObjectIdentifier{Key: obj.Key}
+	}
+
+	// Delete everything
+	_, err = s3client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+		Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
+		Delete: &types.Delete{Objects: ids},
+	})
+	if err != nil {
+		log.Printf("Couldn't delete objects from bucket. Here's why: %v\n", err)
+		return fmt.Errorf("failed to delete object: %w", err)
+	}
+	return nil
+}
+
+// getFilesInS3Dir returns a list of items in a given directory in a S3 bucket
+func getFilesInS3Dir(s3client *s3.Client, mirrorID string) ([]types.Object, error) {
+	result, err := s3client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+		Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
+		Prefix: aws.String(mirrorID + "/"),
+	})
+	if err != nil {
+		log.Printf("Couldn't list objects in bucket. Here's why: %v\n", err)
+		return nil, fmt.Errorf("failed to list objects: %w", err)
+	}
+	return result.Contents, err
 }
