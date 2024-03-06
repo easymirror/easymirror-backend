@@ -71,6 +71,11 @@ func (h *Handler) Init(c echo.Context) error {
 			log.Println("Error creating new mirror link:", err)
 			return c.String(http.StatusInternalServerError, "Internal server error")
 		}
+		if err = tx.Commit(); err != nil {
+			tx.Rollback()
+			log.Println("Error committing to database:", err)
+			return c.String(http.StatusInternalServerError, "Internal server error")
+		}
 	}
 
 	// TODO: Validate if the ID exists?
