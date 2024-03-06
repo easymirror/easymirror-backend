@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -25,6 +26,11 @@ const (
 	BunkrHost      mirrorHost = "bunkr"
 	PixelDrainHost mirrorHost = "pixeldrain"
 	CyberfileHost  mirrorHost = "cyberfile"
+)
+
+const (
+	maxMirrorTasks = 3 // The max number of gorountines when mirroring
+	taskTimeout    = 1 * time.Hour
 )
 
 // Mirror handles incoming PUT requests for mirroring sites.
@@ -72,8 +78,6 @@ func (h *Handler) Mirror(c echo.Context) error {
 
 // mirrorFiles uploads files to the users other sites
 func mirrorFiles(db *db.Database, s3client *s3.Client, mirrorID string, sites []mirrorHost, sourceURIs []string) {
-	// TODO goroutine for each mirror host
-
 	// Make sure sites are unique so we only upload once to the host
 	siteMap := map[mirrorHost]bool{}
 	for _, chosen := range sites {
@@ -91,24 +95,38 @@ func mirrorFiles(db *db.Database, s3client *s3.Client, mirrorID string, sites []
 	defer deleteFromS3(s3client, mirrorID)
 
 	// Begin the mirroring process
+	ctx, cancel := context.WithTimeout(context.Background(), taskTimeout)
+	defer cancel()
+	var wg sync.WaitGroup
+	sem := make(chan int, maxMirrorTasks)
 	for host := range siteMap {
+		wg.Add(1)
+		sem <- 1 // will block if there is MAX ints in sem / until
+
 		switch host {
 		case BunkrHost:
-			_, err := bunkr.UploadTx(context.TODO(), tx, mirrorID, sourceURIs)
-			if err != nil {
-				log.Println("Error uploading to bunk:", err)
-				continue
-			}
+			go func() {
+				defer wg.Done()
+				defer func() { <-sem }() // removes an int from sem, allowing another to proceed
+				_, err := bunkr.UploadTx(ctx, tx, mirrorID, sourceURIs)
+				if err != nil {
+					log.Println("Error uploading to bunk:", err)
+				}
+			}()
 		case PixelDrainHost:
-			_, err := pixeldrain.UploadTX(context.TODO(), tx, mirrorID, sourceURIs)
-			if err != nil {
-				log.Println("Error uploading to pixel drain:", err)
-				continue
-			}
+			go func() {
+				defer wg.Done()
+				defer func() { <-sem }() // removes an int from sem, allowing another to proceed
+				_, err := pixeldrain.UploadTX(ctx, tx, mirrorID, sourceURIs)
+				if err != nil {
+					log.Println("Error uploading to pixel drain:", err)
+				}
+			}()
 		case GofileHost:
 		case CyberfileHost:
 		}
 	}
+	wg.Wait() // Wait for all tasks to be finished
 
 	// Save/Commit mirror links to the `host_links` table
 	if err = tx.Commit(); err != nil {
