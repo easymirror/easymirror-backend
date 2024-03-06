@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/account"
+	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/auth"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/history"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/upload"
 	"github.com/easymirror/easymirror-backend/internal/db"
@@ -15,9 +16,9 @@ func Register(e *echo.Echo, db *db.Database) {
 	api := e.Group("/api")
 	v1 := api.Group("/v1", echojwt.WithConfig(jwtConfig(db)))
 	{
-
-		// TODO endpoint to get new session
-		// TODO endpoint to refresh token
+		// Auth endpounts
+		auth := auth.Handler{Database: db}
+		api.GET("/v1/auth/init", auth.NewJWT)
 
 		// Upload endpoints
 		upload := upload.NewHandler(db)
