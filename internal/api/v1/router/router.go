@@ -21,7 +21,6 @@ func Register(e *echo.Echo, db *db.Database) {
 
 		// Upload endpoints
 		upload := upload.NewHandler(db)
-		v1.POST("/upload", upload.Upload) // TODO: delete this endpoint?
 		v1.GET("/mirror", upload.Init)
 		v1.PUT("/mirror", upload.Mirror)
 
