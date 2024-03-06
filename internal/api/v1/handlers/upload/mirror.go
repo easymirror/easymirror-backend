@@ -95,26 +95,20 @@ func (h *Handler) Mirror(c echo.Context) error {
 			switch host {
 			case BunkrHost:
 				log.Println("Uploading file to Bunkr. Presigned link:", presignedLinks)
-				folder, err := bunkr.UploadTx(context.TODO(), tx, body.MirrorID, presignedLinks)
+				_, err := bunkr.UploadTx(context.TODO(), tx, body.MirrorID, presignedLinks)
 				if err != nil {
 					log.Println("Error uploading to bunk:", err)
 					continue
 				}
-
-				// TODO: Do something with the ID
-				fmt.Printf("Folder Link: %q\n", folder)
 			case GofileHost:
 
 			case PixelDrainHost:
 				log.Println("Uploading file to pixeldrain. Presigned link:", presignedLinks)
-				folder, err := pixeldrain.UploadTX(context.TODO(), tx, body.MirrorID, presignedLinks)
+				_, err := pixeldrain.UploadTX(context.TODO(), tx, body.MirrorID, presignedLinks)
 				if err != nil {
 					log.Println("Error uploading to pixel drain:", err)
 					continue
 				}
-
-				// TODO: Do something with the ID
-				fmt.Printf("Folder Link: %q\n", folder)
 			case CyberfileHost:
 			}
 		}
