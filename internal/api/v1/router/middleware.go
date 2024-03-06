@@ -36,7 +36,7 @@ func jwtConfig(db *db.Database) echojwt.Config {
 
 				// Return new access token
 				c.Response().Header().Set("Authorization", newAccess)
-				return c.String(http.StatusNoContent, `"action":"refresh"`)
+				return c.NoContent(http.StatusNoContent)
 			}
 
 			// Create and set new JWT Pair (access & refresh token)
