@@ -23,7 +23,7 @@ func (h *Handler) NewJWT(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Internal Server Error")
 	}
 
-	c.SetCookie(&http.Cookie{Name: auth.RefreshCookieName, Value: jwt.RefreshToken, HttpOnly: true})
+	c.SetCookie(&http.Cookie{Name: auth.RefreshCookieName, Value: jwt.RefreshToken, HttpOnly: true, Path: "/"})
 	response := map[string]any{
 		"success":      true,
 		"access_token": jwt.AccessToken,
