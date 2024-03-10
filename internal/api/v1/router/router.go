@@ -14,7 +14,7 @@ import (
 func Register(e *echo.Echo, db *db.Database) {
 	// Start the API groups
 	api := e.Group("/api")
-	v1 := api.Group("/v1", echojwt.WithConfig(jwtConfig(db)))
+	v1 := api.Group("/v1", echojwt.WithConfig(jwtConfig()))
 	{
 		// Auth endpounts
 		auth := auth.Handler{Database: db}

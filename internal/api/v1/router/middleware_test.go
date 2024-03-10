@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/easymirror/easymirror-backend/internal/auth"
-	"github.com/easymirror/easymirror-backend/internal/db"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -27,11 +26,7 @@ func init() {
 func TestJWTConfig(t *testing.T) {
 	// Setup server
 	e := echo.New()
-	database, err := db.InitDB()
-	if err != nil {
-		t.Fatal(err)
-	}
-	e.Use(echojwt.WithConfig(jwtConfig(database)))
+	e.Use(echojwt.WithConfig(jwtConfig()))
 	e.GET("/", func(c echo.Context) error {
 		token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `user` key
 		if !ok {

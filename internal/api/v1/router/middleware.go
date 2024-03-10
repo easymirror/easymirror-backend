@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/easymirror/easymirror-backend/internal/auth"
-	"github.com/easymirror/easymirror-backend/internal/db"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -24,7 +23,7 @@ func generateUnauthorizedResponse(c echo.Context, action string) error {
 }
 
 // jwtConfig provides a config middleware for authenticating JWT tokens
-func jwtConfig(db *db.Database) echojwt.Config {
+func jwtConfig() echojwt.Config {
 	return echojwt.Config{
 		SigningKey:    []byte(os.Getenv("JWT_ACCESS_SECRET")),
 		SigningMethod: echojwt.AlgorithmHS256,
