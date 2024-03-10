@@ -7,10 +7,21 @@ import (
 
 	"github.com/easymirror/easymirror-backend/internal/auth"
 	"github.com/easymirror/easymirror-backend/internal/db"
-	"github.com/easymirror/easymirror-backend/internal/user"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
+
+func generateUnauthorizedResponse(c echo.Context, action string) error {
+	type Response struct {
+		Success bool   `json:"success"`
+		Action  string `json:"action"`
+	}
+	response := Response{
+		Success: false,
+		Action:  action,
+	}
+	return c.JSON(http.StatusUnauthorized, response)
+}
 
 // jwtConfig provides a config middleware for authenticating JWT tokens
 func jwtConfig(db *db.Database) echojwt.Config {
@@ -22,38 +33,12 @@ func jwtConfig(db *db.Database) echojwt.Config {
 		// ContinueOnIgnoredError: true, // Set this to `true` so it can go to the correct handler
 		ErrorHandler: func(c echo.Context, err error) error {
 			if errors.Is(err, echojwt.ErrJWTInvalid) {
-				// Check cookies to see if a refresh token is present. If present, refresh acess token & return
-				cookie, err := c.Cookie(auth.RefreshCookieName)
-				if err != nil {
-					return c.String(http.StatusInternalServerError, "Internal Server Error")
+				// Check cookies to see if a refresh token is present. If present, tell them to refresh
+				if _, err := c.Cookie(auth.RefreshCookieName); err == nil {
+					return generateUnauthorizedResponse(c, "refresh_token")
 				}
-
-				// refresh access token
-				newAccess, err := auth.RefreshAccessToken(cookie.Value)
-				if err != nil {
-					return c.String(http.StatusInternalServerError, "Internal Server Error")
-				}
-
-				// Return new access token
-				c.Response().Header().Set("Authorization", newAccess)
-				return c.NoContent(http.StatusNoContent)
 			}
-
-			// Create and set new JWT Pair (access & refresh token)
-			user, err := user.Create(db)
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "Internal Server Error")
-			}
-
-			t, err := auth.GenerateJWT(user.ID().String())
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "Internal Server Error")
-			}
-			c.Response().Header().Set("Authorization", t.AccessToken)
-			c.SetCookie(&http.Cookie{Name: auth.RefreshCookieName, Value: t.RefreshToken, HttpOnly: true})
-
-			// Return nil so it can continue to the appropriate handler
-			return nil
+			return generateUnauthorizedResponse(c, "new_token")
 		},
 	}
 }
