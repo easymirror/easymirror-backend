@@ -24,7 +24,7 @@ func InitServer(db *db.Database) {
 	// Get the port/address to start the server
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "80" // Default port if not specified
+		port = "8000" // Default port if not specified
 	}
 	address := ":" + port
 
