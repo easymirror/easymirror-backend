@@ -19,6 +19,7 @@ func Register(e *echo.Echo, db *db.Database) {
 		// Auth endpounts
 		auth := auth.Handler{Database: db}
 		api.GET("/v1/auth/init", auth.NewJWT)
+		api.GET("/v1/auth/refresh", auth.RefreshJWT)
 
 		// Upload endpoints
 		upload := upload.NewHandler(db)
