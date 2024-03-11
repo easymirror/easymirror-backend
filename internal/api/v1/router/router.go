@@ -24,7 +24,8 @@ func Register(e *echo.Echo, db *db.Database) {
 
 		// Upload endpoints
 		upload := upload.NewHandler(db)
-		v1.GET("/mirror", upload.Init)
+		v1.GET("/mirror/new", upload.Init)
+		v1.GET("/mirror", upload.PresignUri)
 		v1.PUT("/mirror", upload.Mirror)
 
 		// Account endpoints

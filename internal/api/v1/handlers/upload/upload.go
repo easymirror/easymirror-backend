@@ -44,6 +44,48 @@ func (h *Handler) Init(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Internal server error")
 	}
 
+	// Generate a new UUID
+	mirrorID := uuid.New()
+
+	// Generate a new mirror link in the database
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	tx, err := h.PostgresConn.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("Error creating transaction:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+	_, err = tx.Exec(`
+	INSERT INTO mirroring_links (id, created_by_id, upload_date)
+	VALUES
+	(($1), ($2), ($3));
+`, mirrorID, user.ID(), time.Now().UTC())
+	if err != nil {
+		log.Println("Error creating new mirror link:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		log.Println("Error committing to database:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// Return to user
+	response := map[string]any{"success": true, "id": mirrorID}
+	return c.JSON(http.StatusOK, response)
+
+}
+
+// PresignUri is a handler for incoming GET requests.
+// It returns a valid presigned uri for the user can upload their files to
+func (h *Handler) PresignUri(c echo.Context) error {
+	// Get user data from JWT token
+	user, err := user.FromEcho(c)
+	if err != nil {
+		log.Println("Error getting user from JWT:", err)
+		return c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
 	// Get the name of the file & mirror ID, if any
 	filename := c.QueryParam("n")
 	mirrorID := strings.TrimSpace(c.QueryParam("id"))
