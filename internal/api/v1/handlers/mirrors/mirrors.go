@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -41,7 +40,6 @@ func (h *Handler) GetMirror(c echo.Context) error {
 		}
 		return c.JSON(http.StatusNotFound, response)
 	}
-	log.Println("id of mirror:", id)
 
 	// Get info about the mirror link
 	// TODO: Refactor this
@@ -73,7 +71,16 @@ func (h *Handler) GetMirror(c echo.Context) error {
 		}
 		return c.JSON(http.StatusNotFound, response)
 	}
-	log.Println("Error:", err)
+	if err != nil {
+		var response map[string]any
+		switch err {
+		// case sql.ErrNoRows:
+		// 	response = map[string]any{"success": false, "error": "not_found"}
+		default:
+			response = map[string]any{"success": false, "error": "not_found"}
+		}
+		return c.JSON(http.StatusNotFound, response)
+	}
 
 	// Return
 	response.Success = true
