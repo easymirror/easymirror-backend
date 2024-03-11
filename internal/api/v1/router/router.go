@@ -4,6 +4,7 @@ import (
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/account"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/auth"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/history"
+	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/mirrors"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/upload"
 	"github.com/easymirror/easymirror-backend/internal/db"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -30,6 +31,10 @@ func Register(e *echo.Echo, db *db.Database) {
 		account := &account.Handler{Database: db}
 		v1.GET("/user", account.GetUserInfo)
 		v1.PATCH("/user/update", account.UpdateUser)
+
+		// Mirrors endpoints
+		mirrors := mirrors.Handler{Database: db}
+		api.GET("/v1/mirrors/:id", mirrors.GetMirror)
 
 		// History Endpoints
 		history := &history.Handler{Database: db}
