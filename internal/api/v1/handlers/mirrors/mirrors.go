@@ -76,6 +76,8 @@ func (h *Handler) GetMirror(c echo.Context) error {
 		switch err {
 		// case sql.ErrNoRows:
 		// 	response = map[string]any{"success": false, "error": "not_found"}
+		case context.DeadlineExceeded:
+			response = map[string]any{"success": false, "error": "db_too_long"}
 		default:
 			response = map[string]any{"success": false, "error": "not_found"}
 		}
