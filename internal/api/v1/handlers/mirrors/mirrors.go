@@ -17,6 +17,7 @@ type Response struct {
 	Name       *string   `json:"name"`
 	UploadDate time.Time `json:"upload_date"`
 	Links      HostLinks `json:"links"`
+	Status     string    `json:"status"`
 }
 type HostLinks struct {
 	Bunkr      *string `json:"bunkr"`
@@ -86,5 +87,6 @@ func (h *Handler) GetMirror(c echo.Context) error {
 
 	// Return
 	response.Success = true
+	response.Status = "complete"
 	return c.JSON(http.StatusOK, response)
 }
