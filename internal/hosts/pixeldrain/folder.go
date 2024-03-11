@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -57,7 +56,6 @@ func parseFolderResponse(resp *http.Response) (string, error) {
 	// Read the response
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
-	log.Println(string(body))
 
 	// Parse the response
 	response := &struct {
