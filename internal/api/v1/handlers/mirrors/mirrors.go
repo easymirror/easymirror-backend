@@ -79,10 +79,11 @@ func (h *Handler) GetMirror(c echo.Context) error {
 		// 	response = map[string]any{"success": false, "error": "not_found"}
 		case context.DeadlineExceeded:
 			response = map[string]any{"success": false, "error": "db_too_long"}
+			return c.JSON(http.StatusGatewayTimeout, response)
 		default:
 			response = map[string]any{"success": false, "error": "not_found"}
+			return c.JSON(http.StatusNotFound, response)
 		}
-		return c.JSON(http.StatusNotFound, response)
 	}
 
 	// Return
