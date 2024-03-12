@@ -12,6 +12,7 @@ Source code to EasyMirror's backend
 
 ### Building Docker images
 - To build this docker image, run the following command:  `$ docker build -t easymirror-backend:TAG .`
+- To build a docker image with env variables: `$ docker-compose up`
 
 ### Dockerhub
 - As we will not be paying for an organization Dockerhub, all containers will be stored in a personal docker hub.
