@@ -15,6 +15,7 @@ func main() {
 	}
 
 	// Initialize database(s)
+	log.Println("Initializing database...")
 	database, err := db.InitDB()
 	if err != nil {
 		panic(err)
@@ -29,5 +30,6 @@ func main() {
 	}()
 
 	// initialize API server
+	log.Println("Starting api...")
 	easymirrorbackend.InitServer(database)
 }
