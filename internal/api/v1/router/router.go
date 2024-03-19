@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/account"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/auth"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/history"
@@ -15,6 +17,12 @@ import (
 func Register(e *echo.Echo, db *db.Database) {
 	// Start the API groups
 	api := e.Group("/api")
+
+	// Add health-check endpoint
+	{
+		e.GET("/health-check", healthcheck)
+	}
+
 	v1 := api.Group("/v1", echojwt.WithConfig(jwtConfig()))
 	{
 		// Auth endpounts
@@ -45,4 +53,10 @@ func Register(e *echo.Echo, db *db.Database) {
 		v1.DELETE("/history/:id", history.DeleteHistoryItem)
 
 	}
+}
+
+// healthcheck is a handlder for incoming requests to the `/health-check` endpoint.
+// It returns a 200 status code to indicate everything is OK
+func healthcheck(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]any{"status": "ok"})
 }
