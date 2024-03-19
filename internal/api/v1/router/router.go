@@ -8,6 +8,7 @@ import (
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/history"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/mirrors"
 	"github.com/easymirror/easymirror-backend/internal/api/v1/handlers/upload"
+	"github.com/easymirror/easymirror-backend/internal/build"
 	"github.com/easymirror/easymirror-backend/internal/db"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -20,7 +21,8 @@ func Register(e *echo.Echo, db *db.Database) {
 
 	// Add health-check endpoint
 	{
-		e.GET("/health-check", healthcheck)
+		api.GET("/health-check", healthcheck)
+		api.GET("/build-info", buildInfo)
 	}
 
 	v1 := api.Group("/v1", echojwt.WithConfig(jwtConfig()))
@@ -59,4 +61,9 @@ func Register(e *echo.Echo, db *db.Database) {
 // It returns a 200 status code to indicate everything is OK
 func healthcheck(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]any{"status": "ok"})
+}
+
+// buildInfo is a handlder for incoming requests to the `/build-info` endpoint.
+func buildInfo(c echo.Context) error {
+	return c.JSON(http.StatusOK, build.GetInfo())
 }
