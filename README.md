@@ -45,7 +45,6 @@ Source code to EasyMirror's backend
 
 ## TODOs
 - [ ] Add a `Project structure` section to the README
-- [ ] Logs go into a MongoDB database
 - [x] Integrate postgresSQL
 - [x] Upload endpoints
     - [x] Accept multiple files
@@ -72,7 +71,7 @@ Source code to EasyMirror's backend
     - [x] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
     - [x] 2. Refactor all code to get JWT token
 - [ ] own package for `mirrorlinks`?
-- [ ] Endpoint for shareable mirror link
+- [x] Endpoint for shareable mirror link
 
 ## Benchmarks
 ### Download benchmarks
