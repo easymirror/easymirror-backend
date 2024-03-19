@@ -20,8 +20,27 @@ COPY . .
 # Create and/or change our directory to /cmd
 WORKDIR /build/cmd
 
-# Create the binary for the app
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app-binary
+# Define arguments for build revision & create the binary for the app
+ARG PKG_PATH
+ARG BUILD_TIME
+ARG CommitHash
+ARG GoVersion
+ARG GitTag
+ARG VERSION
+
+#  go build -ldflags "-X main.GitCommit=$GIT_COMMIT"
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags "\
+    -X '${PKG_PATH}.appVersion=${VERSION}' \
+    -X '${PKG_PATH}.buildTime=${BUILD_TIME}' \
+    -X '${PKG_PATH}.commitHash=${CommitHash}' \
+    -X '${PKG_PATH}.gitTag=${GitTag}' \
+    -X '${PKG_PATH}.goVersion=${GoVersion}'" \
+    -o app-binary
+
+
+# RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app-binary
 
 # =============================================================================
 # Production phase
