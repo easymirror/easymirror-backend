@@ -96,7 +96,7 @@ func UpdateName(ctx context.Context, db *db.Database, mirrorID, userID, newName 
 	}
 	if err = tx.Commit(); err != nil {
 		tx.Rollback()
-		return fmt.Errorf("Commit error: %w", err)
+		return fmt.Errorf("commit error: %w", err)
 	}
 	return nil
 }
