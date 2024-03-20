@@ -18,7 +18,7 @@ func InitServer(db *db.Database) {
 	e.Use(log.NewMiddlewareLogger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:8080/", "http://localhost:8080", "https://easymirror.io"},
+		AllowOrigins:     []string{"http://localhost*", "https://easymirror.io"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 	}))
