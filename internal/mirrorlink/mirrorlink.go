@@ -132,7 +132,53 @@ func Delete(ctx context.Context, db *db.Database, userID, mirrorID string) error
 	return nil
 }
 
-// GetHostLinks returns the host links from a mirror link
-func GetHostLinks(ctx context.Context, db *db.Database, mirrorID string) error {
-	return nil
-}
+// // GetMirror returns all related data about a given mirror link.
+// func GetMirror(ctx context.Context, db *db.Database, mirrorID string) error {
+// 	if db == nil {
+// 		return errors.New("database is nil")
+// 	}
+
+// 	query := `
+// 		SELECT mirroring_links.nickname, mirroring_links.upload_date, host_links.*
+// 		FROM mirroring_links
+// 		RIGHT JOIN host_links ON mirroring_links.id = host_links.mirror_id
+// 		WHERE mirroring_links.id=($1);
+// 	`
+// 	row := db.PostgresConn.QueryRowContext(ctx, query, mirrorID)
+// 	var err error
+// 	if err = row.Scan(
+// 		&response.Name,
+// 		&response.UploadDate,
+// 		&response.ID,
+// 		&response.Links.Bunkr,
+// 		&response.Links.Gofile,
+// 		&response.Links.Pixeldrain,
+// 		&response.Links.Cyberfile,
+// 		&response.Links.SaintTo,
+// 		&response.Links.Cyberdrop,
+// 	); err == sql.ErrNoRows {
+// 		response := map[string]any{
+// 			"success": false,
+// 			"error":   "not_found",
+// 		}
+// 		return c.JSON(http.StatusNotFound, response)
+// 	}
+// 	if err != nil {
+// 		var response map[string]any
+// 		switch err {
+// 		// case sql.ErrNoRows:
+// 		// 	response = map[string]any{"success": false, "error": "not_found"}
+// 		case context.DeadlineExceeded:
+// 			response = map[string]any{"success": false, "error": "db_too_long"}
+// 			return c.JSON(http.StatusGatewayTimeout, response)
+// 		default:
+// 			response = map[string]any{"success": false, "error": "not_found"}
+// 			return c.JSON(http.StatusNotFound, response)
+// 		}
+// 	}
+
+// 	// Return
+// 	response.Success = true
+// 	response.Status = "complete"
+// 	return c.JSON(http.StatusOK, response)
+// }

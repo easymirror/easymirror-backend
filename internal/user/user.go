@@ -9,18 +9,19 @@ import (
 	"time"
 
 	"github.com/easymirror/easymirror-backend/internal/db"
+	"github.com/easymirror/easymirror-backend/internal/mirrorlink"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type User interface {
-	ID() uuid.UUID                                                                       // returns the ID of the user
-	Info(ctx context.Context, db *db.Database) (*Info, error)                            // Returns the user info
-	MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]MirrorLink, error) // Returns a list of items a user has uploaded
+	ID() uuid.UUID                                                                                  // returns the ID of the user
+	Info(ctx context.Context, db *db.Database) (*Info, error)                                       // Returns the user info
+	MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]mirrorlink.MirrorLink, error) // Returns a list of items a user has uploaded
 	UpdateMirrorLinkName(ctx context.Context, db *db.Database, linkID, name string) error
 	DeleteMirrorLink(ctx context.Context, db *db.Database, linkID string) error
-	GetFiles(ctx context.Context, db *db.Database, linkID string) ([]File, error)
+	GetFiles(ctx context.Context, db *db.Database, linkID string) ([]mirrorlink.File, error)
 	Update(ctx context.Context, db *db.Database, k InfoKey, newVal string) error
 }
 
