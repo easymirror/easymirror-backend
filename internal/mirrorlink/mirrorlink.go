@@ -17,11 +17,27 @@ const (
 	query_limit = 25
 )
 
+// MirrorLink represents a mirror link, but with many details omitted.
 type MirrorLink struct {
 	ID         uuid.UUID `json:"id"`
 	Nickname   string    `json:"name"`
 	UploadDate time.Time `json:"upload_date"`
 	DurationMS int64     `json:"duration"`
+}
+
+type ShareLink struct {
+	MirrorLink           // Embed everything from the `MirrorLink`
+	Links      HostLinks `json:"links"`
+	Status     string    `json:"status"`
+}
+
+type HostLinks struct {
+	Bunkr      *string `json:"bunkr"`
+	Gofile     *string `json:"gofile"`
+	Pixeldrain *string `json:"pixeldrain"`
+	Cyberfile  *string `json:"cyberfile"`
+	SaintTo    *string `json:"saint_to"`
+	Cyberdrop  *string `json:"cyberdrop"`
 }
 
 // Returns a list of items a user has uploaded
@@ -132,53 +148,57 @@ func Delete(ctx context.Context, db *db.Database, userID, mirrorID string) error
 	return nil
 }
 
-// // GetMirror returns all related data about a given mirror link.
-// func GetMirror(ctx context.Context, db *db.Database, mirrorID string) error {
-// 	if db == nil {
-// 		return errors.New("database is nil")
-// 	}
+// GetMirror returns all related data about a given mirror link.
+func GetMirror(ctx context.Context, db *db.Database, mirrorID string) (*ShareLink, error) {
+	if db == nil {
+		return nil, errors.New("database is nil")
+	}
 
-// 	query := `
-// 		SELECT mirroring_links.nickname, mirroring_links.upload_date, host_links.*
-// 		FROM mirroring_links
-// 		RIGHT JOIN host_links ON mirroring_links.id = host_links.mirror_id
-// 		WHERE mirroring_links.id=($1);
-// 	`
-// 	row := db.PostgresConn.QueryRowContext(ctx, query, mirrorID)
-// 	var err error
-// 	if err = row.Scan(
-// 		&response.Name,
-// 		&response.UploadDate,
-// 		&response.ID,
-// 		&response.Links.Bunkr,
-// 		&response.Links.Gofile,
-// 		&response.Links.Pixeldrain,
-// 		&response.Links.Cyberfile,
-// 		&response.Links.SaintTo,
-// 		&response.Links.Cyberdrop,
-// 	); err == sql.ErrNoRows {
-// 		response := map[string]any{
-// 			"success": false,
-// 			"error":   "not_found",
-// 		}
-// 		return c.JSON(http.StatusNotFound, response)
-// 	}
-// 	if err != nil {
-// 		var response map[string]any
-// 		switch err {
-// 		// case sql.ErrNoRows:
-// 		// 	response = map[string]any{"success": false, "error": "not_found"}
-// 		case context.DeadlineExceeded:
-// 			response = map[string]any{"success": false, "error": "db_too_long"}
-// 			return c.JSON(http.StatusGatewayTimeout, response)
-// 		default:
-// 			response = map[string]any{"success": false, "error": "not_found"}
-// 			return c.JSON(http.StatusNotFound, response)
-// 		}
-// 	}
+	// Query the database
+	query := `
+		SELECT mirroring_links.nickname, mirroring_links.upload_date, host_links.*
+		FROM mirroring_links
+		RIGHT JOIN host_links ON mirroring_links.id = host_links.mirror_id
+		WHERE mirroring_links.id=($1);
+		`
+	row := db.PostgresConn.QueryRowContext(ctx, query, mirrorID)
 
-// 	// Return
-// 	response.Success = true
-// 	response.Status = "complete"
-// 	return c.JSON(http.StatusOK, response)
-// }
+	// Parse the results
+	// Because some values can be null, define temp null strings
+	var (
+		tmpName sql.NullString
+		tmpDate sql.NullTime
+	)
+
+	sl := &ShareLink{}
+	err := row.Scan(
+		&tmpName,
+		&tmpDate,
+		&sl.ID,
+		&sl.Links.Bunkr,
+		&sl.Links.Gofile,
+		&sl.Links.Pixeldrain,
+		&sl.Links.Cyberfile,
+		&sl.Links.SaintTo,
+		&sl.Links.Cyberdrop,
+	)
+
+	// Validate
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, errors.New("nothing found")
+		case context.DeadlineExceeded:
+			return nil, errors.New("db took too long")
+		default:
+			return nil, errors.New("not found")
+			// response = map[string]any{"success": false, "error": "not_found"}
+			// return c.JSON(http.StatusNotFound, response)
+		}
+	}
+	sl.Nickname = tmpName.String
+	sl.UploadDate = tmpDate.Time
+
+	// Return
+	return sl, nil
+}
