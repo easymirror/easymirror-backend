@@ -45,7 +45,7 @@ func Register(e *echo.Echo, db *db.Database) {
 
 		// Mirrors endpoints
 		mirrors := mirrors.Handler{Database: db}
-		api.GET("/v1/mirrors/:id", mirrors.GetMirror)
+		api.GET("/v1/mirror/:id", mirrors.GetMirror)
 
 		// History Endpoints
 		history := &history.Handler{Database: db}
