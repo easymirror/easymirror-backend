@@ -73,7 +73,31 @@ func GetUserLinks(ctx context.Context, db *db.Database, userID string, pageNum i
 }
 
 // UpdateName update's the name of a given mirror link
-func UpdateName(ctx context.Context, db *db.Database, mirrorID, name string) error {
+func UpdateName(ctx context.Context, db *db.Database, mirrorID, userID, newName string) error {
+	if db == nil {
+		return errors.New("database is nil")
+	}
+
+	// Begin tx
+	tx, err := db.PostgresConn.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("BeginTx error: %w", err)
+	}
+	_, err = tx.Exec(`
+		UPDATE mirroring_links
+		SET nickname = ($1)
+		WHERE id = ($2)
+		AND created_by_id = ($3);	
+	`, newName, mirrorID, userID)
+
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("exec error: %w", err)
+	}
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("Commit error: %w", err)
+	}
 	return nil
 }
 
