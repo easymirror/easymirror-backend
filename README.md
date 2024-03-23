@@ -44,7 +44,6 @@ Source code to EasyMirror's backend
         2. Download the contents from the presigned URL and upload to other host
 
 ## TODOs
-- [ ] Add a `Project structure` section to the README
 - [x] Integrate postgresSQL
 - [x] Upload endpoints
     - [x] Accept multiple files
@@ -70,7 +69,7 @@ Source code to EasyMirror's backend
 - [x] Refactor getting JWT token
     - [x] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
     - [x] 2. Refactor all code to get JWT token
-- [ ] own package for `mirrorlinks`?
+- [x] own package for `mirrorlinks`?
 - [x] Endpoint for shareable mirror link
 
 ## Benchmarks
