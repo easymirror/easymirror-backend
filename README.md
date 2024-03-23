@@ -12,6 +12,7 @@ Source code to EasyMirror's backend
 
 ### Building Docker images
 - To build this docker image, run the following command:  `$ docker build -t easymirror-backend:TAG .`
+- To build a docker image with env variables: `$ docker-compose up`
 
 ### Dockerhub
 - As we will not be paying for an organization Dockerhub, all containers will be stored in a personal docker hub.
@@ -43,12 +44,10 @@ Source code to EasyMirror's backend
         2. Download the contents from the presigned URL and upload to other host
 
 ## TODOs
-- [ ] Add a `Project structure` section to the README
-- [ ] Logs go into a MongoDB database
 - [x] Integrate postgresSQL
 - [x] Upload endpoints
     - [x] Accept multiple files
-    - [ ] For each file uploaded:
+    - [x] For each file uploaded:
         - [x] Add file data to `files` table in database
         - [x] Upload to AWS S3 bucket
             - [x] Create a new folder for uploads that are uploaded together
@@ -65,13 +64,13 @@ Source code to EasyMirror's backend
 - Authentication
     - [x] When a new user joins, set a JWT
     - [x] JWT refresh every 12 hours
-    - [ ] The client (Front end) will store refresh token in an httponly cookie and access token in local storage.
-- [ ] When deleting mirror links, cascade delete all relevant files too
+- [x] When deleting mirror links, cascade delete all relevant files too
 - [x] When creating a new user, set the `member_since` column
-- [ ] Refactor getting JWT token
-    - [ ] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
-    - [ ] 2. Refactor all code to get JWT token
-- [ ] own package for `mirrorlinks`?
+- [x] Refactor getting JWT token
+    - [x] 1. in the `user` package, create a `FromEcho` function to convert JWT to user
+    - [x] 2. Refactor all code to get JWT token
+- [x] own package for `mirrorlinks`?
+- [x] Endpoint for shareable mirror link
 
 ## Benchmarks
 ### Download benchmarks

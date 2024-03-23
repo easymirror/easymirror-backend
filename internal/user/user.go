@@ -4,20 +4,24 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"time"
 
 	"github.com/easymirror/easymirror-backend/internal/db"
+	"github.com/easymirror/easymirror-backend/internal/mirrorlink"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 type User interface {
-	ID() uuid.UUID                                                                       // returns the ID of the user
-	Info(ctx context.Context, db *db.Database) (*Info, error)                            // Returns the user info
-	MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]MirrorLink, error) // Returns a list of items a user has uploaded
+	ID() uuid.UUID                                                                                  // returns the ID of the user
+	Info(ctx context.Context, db *db.Database) (*Info, error)                                       // Returns the user info
+	MirrorLinks(ctx context.Context, db *db.Database, pageNum int) ([]mirrorlink.MirrorLink, error) // Returns a list of items a user has uploaded
 	UpdateMirrorLinkName(ctx context.Context, db *db.Database, linkID, name string) error
 	DeleteMirrorLink(ctx context.Context, db *db.Database, linkID string) error
-	GetFiles(ctx context.Context, db *db.Database, linkID string) ([]File, error)
+	GetFiles(ctx context.Context, db *db.Database, linkID string) ([]mirrorlink.File, error)
 	Update(ctx context.Context, db *db.Database, k InfoKey, newVal string) error
 }
 
@@ -82,4 +86,20 @@ func FromJWT(t *jwt.Token) (User, error) {
 		return nil, fmt.Errorf("parse uuid error: %w", err)
 	}
 	return &user{id: uId}, nil
+}
+
+// FromEcho pulls a JWT token from an echo context.
+func FromEcho(c echo.Context) (User, error) {
+	token, ok := c.Get("jwt-token").(*jwt.Token) // by default token is stored under `jwt-token` key
+	if !ok {
+		log.Println("Error with JWT token.")
+		return nil, c.String(http.StatusInternalServerError, "Internal server error")
+	}
+
+	user, err := FromJWT(token)
+	if err != nil {
+		log.Println("Error getting user from JWT:", err)
+		return nil, c.String(http.StatusInternalServerError, "Internal server error")
+	}
+	return user, err
 }

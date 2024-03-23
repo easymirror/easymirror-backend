@@ -53,7 +53,7 @@ func (u user) Info(ctx context.Context, db *db.Database) (*Info, error) {
 	// Parse the info
 	defer rows.Close()
 	info := &Info{ID: u.ID().String()}
-	for rows.Next() { // TODO remove this loop since it is only 1 scan
+	for rows.Next() {
 		if err = rows.Scan(&info.FirstName, &info.LastName, &info.Email, &info.Phone, &info.Username, &info.MemberSince, &info.NextRenew); err != nil {
 			log.Println("Error scanning row:", err)
 		}
