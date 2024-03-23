@@ -1,0 +1,7 @@
+.gitignore
+.git
+*.md
+.cache
+assets/
+.env
+.env.*
